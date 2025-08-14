@@ -37,16 +37,20 @@ font-size:clamp(10px,1.6vw,14px);background:#fffdf6;padding:16px;border-radius:1
 .badge{position:relative;display:grid;place-items:center;background:#fffdf3;border:1px solid #f0e6c6;border-radius:18px;padding:14px;cursor:pointer;transition:transform .05s ease,box-shadow .2s ease;}
 .badge:active{transform:translateY(1px) scale(.99)}
 .badge img{width:170px;height:170px;object-fit:contain;display:block}
+/* Modal */
 .popup{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.38);z-index:9999;}
 .popup.show{display:flex;}
 .popup-card{background:#fff;color:#222;padding:24px 26px;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.28);
 max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clamp(18px,2.6vw,24px);line-height:1.6;}
 .popup button{margin-top:14px;background:#111;color:#fff;border:none;padding:.7rem 1.1rem;border-radius:12px;cursor:pointer;font-weight:700}
+/* quick toast bubble near click */
+.toast{position:fixed;background:rgba(0,0,0,.76);color:#fff;padding:.45rem .7rem;border-radius:10px;transform:translate(-50%,-120%);
+pointer-events:none;z-index:10000;font-size:14px;white-space:nowrap;opacity:0;animation:to 1200ms ease forwards}
+@keyframes to{0%{opacity:0;transform:translate(-50%,-80%)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translate(-50%,-140%)}}
+/* Confetti */
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
 .piece{position:absolute;width:10px;height:16px;opacity:0;animation:confetti 1600ms ease forwards;}
 @keyframes confetti{0%{transform:translate(var(--sx), -20px) rotate(0deg); opacity:0;} 10%{opacity:1;} 100%{ transform:translate(var(--ex), 100vh) rotate(720deg); opacity:0;}}
-.spark{position:absolute;font-size:18px;animation:fly 900ms ease-out forwards;pointer-events:none;}
-@keyframes fly{from{opacity:1;transform:translate(var(--x,0),var(--y,0)) scale(1);} to{opacity:0;transform:translate(calc(var(--x,0)*2.2),calc(var(--y,0)*2.2)) scale(1.5);}}
 </style>
 </head>
 <body>
@@ -65,19 +69,23 @@ max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clam
         <section class="page center active" id="pg1">
           <div><pre id="ascii" class="ascii" aria-live="polite"> </pre></div>
         </section>
+
         <section class="page center" id="pg2">
           <img id="msgImg" src="" alt="" style="max-width:min(760px,85vw);max-height:52vh;border-radius:14px;box-shadow:0 8px 22px rgba(0,0,0,.12);" />
         </section>
+
         <section class="page" id="pg3">
-          <div class="grid4" id="pikaGrid">
+          <div class="grid4">
             <div class="badge" data-msg="工作辛苦了，加油 💪✨"><img src="pika1.png" alt=""></div>
             <div class="badge" data-msg="工作一切順利～ 🌈"><img src="pika2.png" alt=""></div>
             <div class="badge" data-msg="希望今天沒有突發狀況，是順心好日子！🍀"><img src="pika3.png" alt=""></div>
             <div class="badge" data-msg="呈上真心的萬分感謝 ✨⭐️❤️"><img src="pika4.png" alt=""></div>
           </div>
         </section>
+
         <section class="page center" id="pg4"><div></div></section>
       </div>
+
       <div class="btns">
         <button id="prev">上一頁</button>
         <button class="ghost" id="next">下一頁</button>
@@ -107,30 +115,21 @@ max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clam
     setTimeout(()=>{ envWrap.style.display='none'; card.classList.add('show'); fireConfetti(60); }, 500);
   });
 
-  // ASCII animation or typewriter
+  // ASCII: default prefers ascii_pikachu.txt; if URL has ?frames=1 then use ascii_frames.txt
+  const useFrames = new URL(location.href).searchParams.get('frames') === '1';
   const asciiEl = document.getElementById('ascii');
-  fetch('ascii_frames.txt').then(r=> r.ok ? r.text() : Promise.reject()).then(text=>{
+  if(useFrames){
+    fetch('ascii_frames.txt').then(r=>r.text()).then(playFrames).catch(()=> loadAscii());
+  }else{
+    loadAscii();
+  }
+  function loadAscii(){ fetch('ascii_pikachu.txt').then(r=>r.text()).then(t=> typewriter(asciiEl, t)).catch(()=>{}); }
+  function playFrames(text){
     const frames = text.split(/\n\s*===FRAME===\s*\n/gm);
     let i=0; function showFrame(){ asciiEl.textContent = frames[i++ % frames.length]; }
     showFrame(); setInterval(showFrame, 280);
-  }).catch(()=>{
-    fetch('ascii_pikachu.txt').then(r=>r.text()).then(t=> typewriter(asciiEl, t));
-  });
-  function typewriter(el, text){ let i=0; el.textContent=''; (function step(){ el.textContent = text.slice(0, i++); if(i<=text.length) requestAnimationFrame(step); })(); }
-
-  // periodic sparks near ASCII
-  setInterval(()=> sparks(asciiEl, 6), 2200);
-  function sparks(target, n=6){
-    const rect = target.getBoundingClientRect();
-    for(let i=0;i<n;i++){
-      const s=document.createElement('div'); s.className='spark'; s.textContent='⚡';
-      const x=(Math.random()*rect.width - rect.width/2), y=(Math.random()*rect.height - rect.height/2);
-      s.style.position='fixed';
-      s.style.left=(rect.left + rect.width/2) + 'px'; s.style.top=(rect.top + rect.height/2 + window.scrollY) + 'px';
-      s.style.setProperty('--x', x+'px'); s.style.setProperty('--y', y+'px');
-      document.body.appendChild(s); setTimeout(()=> s.remove(), 950);
-    }
   }
+  function typewriter(el, text){ let i=0; el.textContent=''; (function step(){ el.textContent = text.slice(0, i++); if(i<=text.length) requestAnimationFrame(step); })(); }
 
   // Message image loader
   const msgImg = document.getElementById('msgImg');
@@ -145,14 +144,21 @@ max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clam
   show(0); prev.addEventListener('click',()=> show(idx-1)); next.addEventListener('click',()=>{ show(idx+1); if(idx===1) fireConfetti(40); });
   finish.addEventListener('click',()=>{ card.classList.remove('show'); envWrap.style.display='grid'; setTimeout(()=>{ envWrap.style.opacity='1'; envWrap.style.transform='none'; flap.style.transform='rotateX(0deg)'; },20); fireConfetti(120); });
 
-  // Modal
+  // Modal + toast fallback
   const popup = document.getElementById('popup'), popupText = document.getElementById('popupText'), popupOk = document.getElementById('popupOk');
   function showModal(text){ popupText.textContent = text; popup.classList.add('show'); popupOk.focus(); }
   popupOk.addEventListener('click', ()=> popup.classList.remove('show'));
   popup.addEventListener('click', e=>{ if(e.target === popup) popup.classList.remove('show'); });
 
-  // click bindings
-  document.querySelectorAll('.badge').forEach(b=> b.addEventListener('click', ()=> showModal(b.getAttribute('data-msg')||'')));
+  function toast(x,y,text){ const t=document.createElement('div'); t.className='toast'; t.textContent=text; t.style.left=x+'px'; t.style.top=y+'px'; document.body.appendChild(t); setTimeout(()=> t.remove(), 1300); }
+
+  document.querySelectorAll('.badge').forEach(b=>{
+    b.addEventListener('click', (e)=>{
+      const text = b.getAttribute('data-msg') || '';
+      const r = b.getBoundingClientRect(); toast(r.left + r.width/2, r.top + 10 + window.scrollY, text);
+      showModal(text);
+    });
+  });
 
   // Confetti
   const confetti = document.getElementById('confetti');
