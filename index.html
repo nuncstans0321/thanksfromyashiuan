@@ -1,64 +1,70 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>感謝卡 — 可上傳動畫 + CSS彈窗版本</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>感謝卡 — 無黑框版（行動優化）</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <style>
 :root{--bg:#fff8ec;--ink:#2b2b2b;--paper:#fffef9;--gold:#ffd24d;--pink:#ff7aa2;}
-*{box-sizing:border-box} html,body{height:100%}
-body{margin:0;background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));color:var(--ink);
-     font-family:ui-rounded,'Noto Sans TC',system-ui,-apple-system,Arial;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.stage{position:relative;width:min(960px,94vw);height:min(640px,92vh);}
+*{box-sizing:border-box}
+html,body{height:100%;}
+body{margin:0;background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));
+  color:var(--ink);font-family:ui-rounded,'Noto Sans TC',system-ui,-apple-system,Arial,Segoe UI;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stage{position:relative;width:min(960px,96vw);height:min(680px,94svh);}
+@supports not (height: 1svh){ .stage{height:min(680px,94vh);} }
 
 /* ---------- Intro (envelope) ---------- */
 .intro{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .5s,transform .5s;}
-#envArea{position:relative;width:min(560px,90vw);aspect-ratio:16/10;display:grid;place-items:center}
-#envCustom{position:absolute;inset:0;display:none;border-radius:18px;overflow:hidden;box-shadow:0 16px 46px rgba(0,0,0,.18)}
+#envArea{position:relative;width:min(560px,94vw);aspect-ratio:16/10;display:grid;place-items:center}
+#envCustom{position:absolute;inset:0;display:none;border-radius:18px;overflow:hidden;box-shadow:0 16px 46px rgba(0,0,0,.18);background:transparent}
 #envCustom .holder{position:absolute;inset:0}
-#envCustom video,#envCustom img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#envCustom video,#envCustom img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent}
 #envDefault{position:absolute;inset:0;border-radius:18px;background:#fff;box-shadow:0 16px 46px rgba(0,0,0,.18);display:grid;place-items:center}
 .envelope{position:relative;width:min(440px,82%);height:min(280px,62%);}
 .env-body{position:absolute;inset:0;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
 .env-flap{position:absolute;left:0;right:0;top:0;height:62%;background:linear-gradient(#ffe27a,#ffd24d);
   clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;border-top-left-radius:14px;border-top-right-radius:14px;transition:transform .7s cubic-bezier(.2,.9,.2,1.2)}
-.hint{position:absolute;right:8px;bottom:8px;background:#111;color:#fff;padding:.55rem .9rem;border-radius:12px;font-weight:800;letter-spacing:.3px;box-shadow:0 8px 20px rgba(0,0,0,.2);user-select:none}
+.hint{position:absolute;right:8px;bottom:8px;background:#111;color:#fff;padding:.6rem 1rem;border-radius:12px;font-weight:800;letter-spacing:.3px;box-shadow:0 8px 20px rgba(0,0,0,.2);user-select:none}
 .clickmask{position:absolute;inset:0;cursor:pointer;outline:none;border-radius:18px}
+.ready{position:absolute;left:10px;bottom:10px;font-size:12px;color:#888}
 
 /* ---------- Card ---------- */
 .card{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transform:translateY(10px) scale(.98);transition:opacity .7s,transform .7s;}
 .card.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}
-.paper{width:min(900px,94vw);height:min(600px,90vh);background:var(--paper);border-radius:20px;box-shadow:0 18px 60px rgba(0,0,0,.12),0 4px 16px rgba(0,0,0,.06);position:relative;overflow:hidden;}
+.paper{width:100%;height:100%;background:var(--paper);border-radius:20px;
+  box-shadow:0 18px 60px rgba(0,0,0,.12),0 4px 16px rgba(0,0,0,.06);position:relative;overflow:hidden;}
 .pages{position:absolute;inset:0;}
-.page{position:absolute;inset:0;padding:36px clamp(16px,4vw,56px);opacity:0;transform:translateY(10px);transition:opacity .45s,transform .45s;overflow:auto;}
+.page{position:absolute;inset:0;padding:20px clamp(14px,4vw,42px);opacity:0;transform:translateY(10px);transition:opacity .45s,transform .45s;overflow:auto;}
 .page.active{opacity:1;transform:translateY(0)}
 .center{display:grid;place-items:center;text-align:center;height:100%}
 
 /* ASCII 區域（可文字或媒體） */
-.ascii-wrap{position:relative;width:100%;height:60vh;border-radius:12px;background:#fffdf6;box-shadow:inset 0 0 0 1px #f3edd7;overflow:hidden}
+.ascii-wrap{position:relative;width:100%;height:calc(100% - 96px);border-radius:12px;background:#fffdf6;box-shadow:inset 0 0 0 1px #f3edd7;overflow:hidden}
 .ascii-plate{position:absolute;left:12px;top:12px;transform-origin:top left}
 pre.ascii{margin:0;white-space:pre;line-height:1.06;font-family:ui-monospace,Menlo,Consolas,'Noto Sans Mono CJK TC',monospace;font-size:14px;display:inline-block}
 #asciiMedia{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
-#asciiMedia video,#asciiMedia img{max-width:100%;max-height:100%;object-fit:contain}
-.pika-note{position:absolute;top:14px;left:18px;color:#b08b00;font-weight:700;letter-spacing:.5px;opacity:.95}
+#asciiMedia video,#asciiMedia img{max-width:100%;max-height:100%;object-fit:contain;background:transparent}
+.pika-note{position:absolute;top:10px;left:12px;color:#b08b00;font-weight:700;letter-spacing:.5px;opacity:.95}
 .pika-note::after{content:' \\266A'}
 
 /* 4 圖 */
-.grid4{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:18px;margin-top:6px;}
-.badge{position:relative;display:grid;place-items:center;background:#fffdf3;border:1px solid #f0e6c6;border-radius:18px;padding:14px;cursor:pointer;user-select:none;min-height:200px;text-decoration:none;color:inherit}
-.badge img{width:170px;height:170px;object-fit:contain;display:block}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;margin-top:6px;}
+.badge{position:relative;display:grid;place-items:center;background:#fffdf3;border:1px solid #f0e6c6;border-radius:16px;padding:12px;cursor:pointer;user-select:none;min-height:160px;text-decoration:none;color:inherit}
+.badge img{width:min(42vw,170px);height:min(42vw,170px);object-fit:contain;display:block}
 
 /* 導覽按鈕 */
-.btns{position:absolute;right:16px;bottom:16px;display:flex;gap:10px;flex-wrap:wrap}
-button{appearance:none;border:none;padding:.7rem 1rem;border-radius:12px;font-weight:700;cursor:pointer;background:#111;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15);}
+.btns{position:absolute;right:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
+button{appearance:none;border:none;padding:.75rem 1.05rem;border-radius:12px;font-weight:700;cursor:pointer;background:#111;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15);font-size:16px}
 button.ghost{background:var(--gold);color:#3b2a00}
 
 /* CSS 文字彈窗（:target） */
 .layer{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;place-items:center;z-index:50}
 .layer:target{display:grid}
-.layer .box{background:#fff;color:#222;padding:24px;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.28);
-  max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clamp(18px,2.6vw,24px);line-height:1.6}
+.layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.28);
+  max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6}
 .layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
 .layer .bgclose{position:absolute;inset:0;content:"";display:block}
 
@@ -79,6 +85,7 @@ button.ghost{background:var(--gold);color:#3b2a00}
       </div>
       <div class="hint">點信封動畫</div>
       <button class="clickmask" id="startBtn" aria-label="點擊開始播放動畫"></button>
+      <div class="ready" id="readyTip" hidden>動畫已就緒</div>
     </div>
   </section>
 
@@ -151,62 +158,80 @@ button.ghost{background:var(--gold);color:#3b2a00}
     try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) return null; return await r.text(); }catch(e){ return null; }
   }
 
-  /* ---------- Intro: detect custom envelope animation ---------- */
+  /* ---------- Intro: prepare custom animation but DON'T show until ready ---------- */
   const intro = document.getElementById('intro');
   const envCustom = document.getElementById('envCustom');
   const envDefault = document.getElementById('envDefault');
   const holder = envCustom.querySelector('.holder');
   const flap = envDefault.querySelector('.env-flap');
   const startBtn = document.getElementById('startBtn');
+  const readyTip = document.getElementById('readyTip');
 
-  let playIntro = null; // function that returns Promise when finished
-  (async function detectIntro(){
-    // 1) Lottie json
+  let introPlay = null; // function -> Promise
+  (async function prepareIntro(){
+    // Try Lottie JSON
     try{
       const jr = await fetch('envelope_open.json',{cache:'no-store'});
       if(jr.ok){
         const data = await jr.json();
-        envCustom.style.display='block'; envDefault.style.display='none';
         const box = document.createElement('div'); box.style.cssText='position:absolute;inset:0';
         holder.appendChild(box);
         const anim = lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:false,animationData:data});
-        playIntro = ()=> new Promise(resolve=>{ anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete', resolve); setTimeout(resolve, 8000); });
+        readyTip.hidden=false;
+        introPlay = ()=> new Promise(resolve=>{
+          envDefault.style.display='none'; envCustom.style.display='block';
+          anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete', resolve); setTimeout(resolve, 8000);
+        });
         return;
       }
     }catch(e){}
 
-    // 2) video
+    // Try Video mp4/webm: preload first frame; only swap when ready
     const vCands=['envelope_open.mp4','envelope_open.webm'];
     for(const src of vCands){
       if(await canPlayVideo(src)){
-        envCustom.style.display='block'; envDefault.style.display='none';
-        const v=document.createElement('video'); v.src=src; v.playsInline=true; v.muted=true; v.controls=false; v.autoplay=false;
-        v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover'; holder.appendChild(v);
-        playIntro = ()=> new Promise(resolve=>{ v.currentTime=0; v.play().catch(()=>{}); v.onended=resolve; setTimeout(resolve, 10000); });
+        const v=document.createElement('video');
+        v.src=src; v.playsInline=true; v.setAttribute('playsinline',''); v.muted=true; v.controls=false; v.autoplay=false; v.preload='auto';
+        v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent';
+        let isReady=false;
+        v.addEventListener('loadeddata',()=>{ isReady=true; readyTip.hidden=false; });
+        v.addEventListener('canplay',()=>{ isReady=true; readyTip.hidden=false; });
+        holder.appendChild(v);
+        introPlay = async ()=>{
+          if(!isReady){ // 若還沒就緒，直接走 CSS 信封避免黑框
+            flap.style.transform='rotateX(175deg)'; await sleep(650); return;
+          }
+          envDefault.style.display='none'; envCustom.style.display='block';
+          v.currentTime=0; const p=v.play(); if(p) p.catch(()=>{});
+          await new Promise(res=>{ v.onended=res; setTimeout(res, 12000); });
+        };
         return;
       }
     }
 
-    // 3) animated image
+    // Try animated image
     const iCands=['envelope_open.gif','envelope_open.apng','envelope_open.webp','envelope_open.svg'];
     for(const src of iCands){
       if(await canLoadImage(src)){
-        envCustom.style.display='block'; envDefault.style.display='none';
-        const img = document.createElement('img'); img.src=src; holder.appendChild(img);
-        const ms = parseInt(new URLSearchParams(location.search).get('envms')||'3500',10);
-        playIntro = ()=> sleep(ms);
+        const img=document.createElement('img'); img.src=src; holder.appendChild(img);
+        readyTip.hidden=false;
+        introPlay = async ()=>{ envDefault.style.display='none'; envCustom.style.display='block'; await sleep(3200); };
         return;
       }
     }
 
-    // fallback CSS envelope
-    envCustom.style.display='none'; envDefault.style.display='grid';
-    playIntro = ()=> new Promise(resolve=>{ flap.style.transform='rotateX(175deg)'; setTimeout(resolve, 600); });
+    // Fallback only: CSS flap
+    introPlay = async ()=>{ flap.style.transform='rotateX(175deg)'; await sleep(650); };
   })();
 
   function canPlayVideo(url){
     return new Promise((resolve)=>{
-      const v=document.createElement('video'); v.src=url; v.muted=true; v.playsInline=true;
+      const v=document.createElement('video');
+      const mp4OK = !!v.canPlayType && (v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"') || v.canPlayType('video/mp4'));
+      const webmOK = !!v.canPlayType && (v.canPlayType('video/webm; codecs="vp9,opus"') || v.canPlayType('video/webm'));
+      if(url.endsWith('.mp4') && !mp4OK){ resolve(false); return; }
+      if(url.endsWith('.webm') && !webmOK){ resolve(false); return; }
+      v.src=url; v.muted=true; v.playsInline=true;
       const to=setTimeout(()=>resolve(false), 2500);
       v.onloadeddata=()=>{ clearTimeout(to); resolve(true); };
       v.onerror=()=>{ clearTimeout(to); resolve(false); };
@@ -225,7 +250,7 @@ button.ghost{background:var(--gold);color:#3b2a00}
   const card = document.getElementById('card');
   startBtn.addEventListener('click', async ()=>{
     startBtn.disabled = true;
-    if(playIntro) await playIntro(); else await sleep(600);
+    if(introPlay) await introPlay(); else { flap.style.transform='rotateX(175deg)'; await sleep(650); }
     intro.style.opacity='0'; intro.style.transform='translateY(-10px) scale(.98)';
     await sleep(350);
     intro.style.display='none';
@@ -263,7 +288,7 @@ button.ghost{background:var(--gold);color:#3b2a00}
     for(const src of vCands){
       if(await canPlayVideo(src)){
         asciiMedia.style.display='flex'; asciiEl.parentElement.style.display='none';
-        const v=document.createElement('video'); v.src=src; v.autoplay=true; v.loop=true; v.muted=true; v.playsInline=true;
+        const v=document.createElement('video'); v.src=src; v.autoplay=true; v.loop=true; v.muted=true; v.playsInline=true; v.setAttribute('playsinline','');
         asciiMedia.appendChild(v); return;
       }
     }
@@ -312,73 +337,107 @@ button.ghost{background:var(--gold);color:#3b2a00}
   }
   loadSlots();
 
-  /* ---------- Finale：若有自備就播放，完畢後一定接顆粒『ありがとうございます』 ---------- */
+  /* ---------- Finale：播放自備動畫（若有）→ 直接顆粒『ありがとうございます』 ---------- */
   async function finishFlow(){
     // 重用 intro 區來播結尾
-    const envArea = document.getElementById('envArea');
     card.classList.remove('show');
     intro.style.display='grid'; intro.style.opacity='1'; intro.style.transform='none';
-    const ok = await playFinaleCustom();
-    // 無論有沒有自備，直接跳顆粒字樣
-    await sparkleText('ありがとうございます', 3000);
+
+    // Prepare finale first; only show when ready to avoid黑框
+    const ok = await playFinalePrepared();
+    await sparkleText('ありがとうございます', 3200);
   }
 
-  async function playFinaleCustom(){
-    envDefault.style.display='none'; envCustom.style.display='block'; holder.innerHTML='';
+  async function playFinalePrepared(){
+    // Try to prepare custom finale
+    const ctn = holder; ctn.innerHTML='';
+    let play = null;
+
     // JSON
     try{
       const jr = await fetch('finale.json',{cache:'no-store'});
       if(jr.ok){
         const data = await jr.json();
         const box = document.createElement('div'); box.style.cssText='position:absolute;inset:0';
-        holder.appendChild(box);
+        ctn.appendChild(box);
         const anim = lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:false,animationData:data});
-        anim.goToAndStop(0,true); anim.play();
-        await new Promise(res=>{ anim.addEventListener('complete',res); setTimeout(res,9000); });
-        return true;
+        play = ()=> new Promise(res=>{ envDefault.style.display='none'; envCustom.style.display='block'; anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete',res); setTimeout(res,9000); });
       }
     }catch(e){}
-    // Video
-    const vCands=['finale.mp4','finale.webm'];
-    for(const src of vCands){
-      if(await canPlayVideo(src)){
-        const v=document.createElement('video'); v.src=src; v.playsInline=true; v.muted=true; v.controls=false; v.autoplay=false;
-        v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
-        holder.appendChild(v); v.currentTime=0; v.play().catch(()=>{});
-        await new Promise(res=>{ v.onended=res; setTimeout(res,10000); });
-        return true;
+
+    if(!play){
+      // Video
+      const vCands=['finale.mp4','finale.webm'];
+      for(const src of vCands){
+        if(await canPlayVideo(src)){
+          const v=document.createElement('video'); v.src=src; v.playsInline=true; v.setAttribute('playsinline',''); v.muted=true; v.controls=false; v.autoplay=false; v.preload='auto';
+          v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent';
+          let ready=false; v.addEventListener('loadeddata',()=>{ ready=true; });
+          ctn.appendChild(v);
+          play = async ()=>{
+            if(!ready){ return; } // 直接跳過黑框
+            envDefault.style.display='none'; envCustom.style.display='block';
+            v.currentTime=0; const p=v.play(); if(p) p.catch(()=>{});
+            await new Promise(res=>{ v.onended=res; setTimeout(res,10000); });
+          };
+          break;
+        }
       }
     }
-    // Animated image
-    const iCands=['finale.gif','finale.apng','finale.webp','finale.svg'];
-    for(const src of iCands){
-      if(await canLoadImage(src)){
-        const img=document.createElement('img'); img.src=src; holder.appendChild(img);
-        const ms=parseInt(new URLSearchParams(location.search).get('finalems')||'3500',10);
-        await sleep(ms); return true;
+
+    if(!play){
+      // Animated image
+      const iCands=['finale.gif','finale.apng','finale.webp','finale.svg'];
+      for(const src of iCands){
+        if(await canLoadImage(src)){
+          const img=document.createElement('img'); img.src=src; ctn.appendChild(img);
+          play = async ()=>{ envDefault.style.display='none'; envCustom.style.display='block'; await sleep(3200); };
+          break;
+        }
       }
     }
-    envCustom.style.display='none';
+
+    if(play){ await play(); return true; }
+    // 沒有自備動畫就維持 default，不顯示黑框
+    envCustom.style.display='none'; envDefault.style.display='grid';
     return false;
   }
 
-  /* ---------- Effects canvas：顆粒文字 ---------- */
+  /* ---------- Effects canvas：顆粒文字（DPR & 自動縮放） ---------- */
   const canvas=document.getElementById('fxCanvas'), ctx=canvas.getContext('2d');
-  function resizeCanvas(){ canvas.width=innerWidth; canvas.height=innerHeight; } resizeCanvas(); addEventListener('resize', resizeCanvas);
+  function resizeCanvas(){ const dpr=window.devicePixelRatio||1; canvas.width=innerWidth*dpr; canvas.height=innerHeight*dpr; canvas.style.width=innerWidth+'px'; canvas.style.height=innerHeight+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); }
+  resizeCanvas(); addEventListener('resize', resizeCanvas);
 
   function sparkleText(text,total=2600){
     return new Promise(resolve=>{
       resizeCanvas(); canvas.style.opacity='1';
-      const W=canvas.width,H=canvas.height, off=document.createElement('canvas'), octx=off.getContext('2d');
-      off.width=W; off.height=H;
-      const fontSize=Math.min(170, Math.max(90, Math.floor(W*0.2)));
-      octx.fillStyle='#000'; octx.textAlign='center'; octx.textBaseline='middle';
+      const W=innerWidth, H=innerHeight;
+      // compute font size by measuring width vs height
+      const off=document.createElement('canvas'), octx=off.getContext('2d'); off.width=W; off.height=H;
+      function fitFont(){
+        let fs = Math.min(140, Math.max(60, Math.floor(W*0.18)));
+        for(let k=0;k<10;k++){
+          octx.font='900 '+fs+'px "Noto Sans JP","Noto Sans CJK JP","Noto Sans CJK TC",system-ui,Arial';
+          const w = octx.measureText(text).width;
+          const scaleW = (W*0.86)/w;
+          const scaleH = (H*0.34)/fs;
+          const scale = Math.min(scaleW, scaleH, 1);
+          const newFs = Math.max(40, Math.floor(fs*scale));
+          if(Math.abs(newFs-fs)<1) break;
+          fs = newFs;
+        }
+        return fs;
+      }
+      const fontSize = fitFont();
       octx.font='900 '+fontSize+'px "Noto Sans JP","Noto Sans CJK JP","Noto Sans CJK TC",system-ui,Arial';
+      octx.fillStyle='#000'; octx.textAlign='center'; octx.textBaseline='middle';
       octx.fillText(text, W/2, H*0.43);
       const step=6, img=octx.getImageData(0,0,W,H).data, targets=[];
-      for(let y=0;y<H;y+=step){ for(let x=0;x<W;x+=step){ if(img[(y*W+x)*4+3]>160) targets.push({x,y}); } }
-      const maxP=1500; if(targets.length>maxP){ const r=maxP/targets.length; const pick=[]; for(let i=0;i<targets.length;i++) if(Math.random()<r) pick.push(targets[i]); targets.splice(0,targets.length,...pick); }
-      const parts=targets.map(t=>({x:W/2,y:H*0.55,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.6)*3,tx:t.x,ty:t.y,sz:1.2+Math.random()*1.8,h:Math.floor(45+Math.random()*50),s:Math.random()*60}));
+      for(let y=0;y<H;y+=step){
+        for(let x=0;x<W;x+=step){ if(img[(y*W+x)*4+3]>160) targets.push({x,y}); }
+      }
+      const maxP=1400; if(targets.length>maxP){ const r=maxP/targets.length; const pick=[]; for(let i=0;i<targets.length;i++) if(Math.random()<r) pick.push(targets[i]); targets.splice(0,targets.length,...pick); }
+      const parts=targets.map(t=>({x:W/2,y:H*0.55,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.6)*3,tx:t.x,ty:t.y,sz:1+Math.random()*1.6,h:Math.floor(45+Math.random()*50),s:Math.random()*60}));
       const start=performance.now(), mid=start+total*0.35, end=start+total;
       (function frame(now){
         ctx.clearRect(0,0,W,H); ctx.fillStyle='rgba(255,255,255,0.02)'; ctx.fillRect(0,0,W,H);
