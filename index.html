@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>感謝卡 - 新流程</title>
+<title>感謝卡 - 精修流程</title>
 <style>
 :root{--bg:#fff8ec;--ink:#2b2b2b;--paper:#fffef9;--heart:#ff7aa2;}
 *{box-sizing:border-box} html,body{height:100%} body{margin:0;background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));color:var(--ink);font-family:ui-rounded,'Noto Sans TC',system-ui,-apple-system,Arial;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -22,9 +22,14 @@
 .page{position:absolute;inset:0;padding:36px clamp(16px,4vw,56px);opacity:0;transform:translateY(10px);transition:opacity .45s,transform .45s;overflow:auto;}
 .page.active{opacity:1;transform:translateY(0);}
 .center{display:grid;place-items:center;text-align:center;height:100%}
-pre.ascii{white-space:pre;line-height:1.06;font-family:ui-monospace, Menlo, Consolas, 'Noto Sans Mono CJK TC', monospace;font-size:clamp(10px,1.6vw,16px);background:#fffdf6;padding:16px;border-radius:12px;box-shadow:inset 0 0 0 1px #f3edd7;max-height:60vh;overflow:auto;user-select:text;max-width:100%;}
+/* ASCII fit box */
+.ascii-wrap{width:100%;height:60vh;overflow:auto;border-radius:12px;background:#fffdf6;box-shadow:inset 0 0 0 1px #f3edd7;padding:12px}
+pre.ascii{margin:0;white-space:pre;line-height:1.06;font-family:ui-monospace, Menlo, Consolas, 'Noto Sans Mono CJK TC', monospace;font-size:16px;display:inline-block}
+.pika-note{position:absolute;top:14px;left:18px;color:#b08b00;font-weight:700;letter-spacing:.5px;opacity:.95}
+.pika-note::after{content:'♪';margin-left:.2em}
+/* grid */
 .grid4{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:18px;margin-top:6px;}
-.badge{position:relative;display:grid;place-items:center;background:#fffdf3;border:1px solid #f0e6c6;border-radius:18px;padding:14px;cursor:pointer}
+.badge{position:relative;display:grid;place-items:center;background:#fffdf3;border:1px solid #f0e6c6;border-radius:18px;padding:14px;cursor:pointer;user-select:none}
 .badge img{width:170px;height:170px;object-fit:contain;display:block}
 .btns{position:absolute;right:16px;bottom:16px;display:flex;gap:10px;flex-wrap:wrap}
 button{appearance:none;border:none;padding:.7rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;background:#111;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15);}
@@ -38,9 +43,12 @@ button.ghost{background:#ffe27a;color:#3b2a00}
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .piece{position:absolute;width:10px;height:16px;opacity:0;animation:confetti 1600ms ease forwards}
 @keyframes confetti{0%{transform:translate(var(--sx), -20px) rotate(0deg); opacity:0;} 10%{opacity:1;} 100%{ transform:translate(var(--ex), 100vh) rotate(720deg); opacity:0;}}
-.finalmsg{position:fixed;inset:auto 0 12vh 0;text-align:center;font-size:clamp(18px,2.8vw,28px);color:#222;opacity:0;transform:translateY(10px);transition:opacity .5s, transform .5s;pointer-events:none}
+/* final message */
+.finalmsg{position:fixed;left:0;right:0;bottom:10vh;text-align:center;font-size:clamp(18px,2.8vw,28px);color:#222;opacity:0;transform:translateY(10px);transition:opacity .8s, transform .8s;pointer-events:none}
 .finalmsg.show{opacity:1;transform:translateY(0)}
-.smalltip{position:absolute;top:18px;left:20px;color:#b08b00;font-size:14px;opacity:.8}
+.zap{display:inline-block;animation:zap 1400ms ease-in-out infinite;opacity:.9}
+.zap:nth-child(2){animation-delay:.25s} .zap:nth-child(3){animation-delay:.5s}
+@keyframes zap{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -48,69 +56,95 @@ button.ghost{background:#ffe27a;color:#3b2a00}
   <div class="env-wrap" id="envIntro"><div class="envelope" id="envBtn" role="button" tabindex="0" aria-label="開啟"><div class="env-body"></div><div class="env-flap"></div><div class="heart"></div></div></div>
   <div class="card" id="card"><div class="paper">
     <div class="pages">
+      <!-- Page 1: ASCII dancing -->
       <section class="page center active" id="pg1">
-        <div style="width:100%"><pre class="ascii" id="ascii">Loading…</pre></div>
-        <div class="smalltip">（上傳 ascii_frames.txt 到 repo 可覆蓋動畫；用 ===FRAME=== 分隔幀）</div>
+        <div class="ascii-wrap" id="asciiWrap"><pre class="ascii" id="ascii">Loading…</pre></div>
+        <div class="pika-note">pika~pika</div>
       </section>
+      <!-- Page 2: four uploadable options -->
       <section class="page" id="pg2">
         <div class="grid4">
-          <div class="badge" data-msg="工作辛苦了，加油 💪✨"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZlZjlhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmZkMjRkIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+CjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiByeD0iMjYiIGZpbGw9IiNmZmZkZjMiIHN0cm9rZT0iI2YwZTZjNiIvPgo8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MCwxOCkiPgogIDxyZWN0IHg9IjMwIiB5PSIwIiB3aWR0aD0iMjAiIGhlaWdodD0iMTgiIHJ4PSI2IiBmaWxsPSIjYzhiMjdhIi8+CiAgPHJlY3QgeD0iOCIgeT0iMTYiIHdpZHRoPSI4NCIgaGVpZ2h0PSIxMTAiIHJ4PSIxOCIgZmlsbD0idXJsKCNnKSIgc3Ryb2tlPSIjYmRhMzVjIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cmVjdCB4PSIxOCIgeT0iMjgiIHdpZHRoPSI2NCIgaGVpZ2h0PSIxMCIgcng9IjQiIGZpbGw9IiNmZmYyYjgiIG9wYWNpdHk9Ii44Ii8+CiAgPHBhdGggZD0iTTU0IDU2IEw0MiA4NCBoMTYgbC0xMCAyOCAyNC0zNGgtMTR6IiBmaWxsPSIjZmY5YjAwIiBzdHJva2U9IiM4YTRmMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L2c+PC9zdmc+" alt="能量瓶"></div>
-          <div class="badge" data-msg="工作一切順利～ 🌈"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmZmRmMyIgc3Ryb2tlPSIjZjBlNmM2Ii8+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE2LDIyKSI+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI0OCIgcj0iMjgiIGZpbGw9IiNmZmQyNGQiIHN0cm9rZT0iI2UwYjY0MCIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGcgZmlsbD0iI2ZmZDI0ZCI+CiAgICA8cmVjdCB4PSI2MiIgeT0iOCIgd2lkdGg9IjQiIGhlaWdodD0iMTIiIHJ4PSIyIi8+PHJlY3QgeD0iNjIiIHk9Ijc2IiB3aWR0aD0iNCIgaGVpZ2h0PSIxMiIgcng9IjIiLz4KICAgIDxyZWN0IHg9IjI2IiB5PSI0NiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjQiIHJ4PSIyIi8+PHJlY3QgeD0iOTAiIHk9IjQ2IiB3aWR0aD0iMTIiIGhlaWdodD0iNCIgcng9IjIiLz4KICAgIDxyZWN0IHg9Ijg0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iMTIiIHJ4PSIyIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSA4NiAzMCkiLz4KICAgIDxyZWN0IHg9Ijg0IiB5PSI2MCIgd2lkdGg9IjQiIGhlaWdodD0iMTIiIHJ4PSIyIiB0cmFuc2Zvcm09InJvdGF0ZSgtNDUgODYgNjYpIi8+CiAgICA8cmVjdCB4PSI0MCIgeT0iMjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjEyIiByeD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoLTQ1IDQyIDMwKSIvPgogICAgPHJlY3QgeD0iNDAiIHk9IjYwIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMiIgcng9IjIiIHRyYW5zZm9ybT0icm90YXRlKDQ1IDQyIDY2KSIvPgogIDwvZz4KICA8cGF0aCBkPSJNMTggOTYgYTIwIDE2IDAgMCAxIDE4LTEyIGg1MiBhMjAgMTYgMCAxIDEgMCAzMiBIMzggYTIwIDE2IDAgMCAxIC0yMC0yMCB6IiBmaWxsPSIjZTdmMmZmIiBzdHJva2U9IiNjOGRlZjgiIHN0cm9rZS13aWR0aD0iMyIvPgogIDxjaXJjbGUgY3g9IjYwIiBjeT0iNDgiIHI9IjQiIGZpbGw9IiMzMzMiLz48Y2lyY2xlIGN4PSI3NiIgY3k9IjQ4IiByPSI0IiBmaWxsPSIjMzMzIi8+CiAgPHBhdGggZD0iTTYwIDU2IHE4IDggMTYgMCIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KPC9nPjwvc3ZnPg==" alt="好天氣"></div>
-          <div class="badge" data-msg="希望今天沒有突發狀況，是順心好日子！🍀"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmZmRmMyIgc3Ryb2tlPSIjZjBlNmM2Ii8+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIwLDE2KSI+CiAgPHBhdGggZD0iTTQ4IDExNiBsMTIgMTIgMTItMTIgOC0zMkg0MHoiIGZpbGw9IiNmZmMwY2IiIHN0cm9rZT0iI2U2OGFhMSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGc+CiAgICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjM2IiByPSIxNiIgZmlsbD0iI2ZmYjNjNyIgc3Ryb2tlPSIjZGU3ZmEwIiBzdHJva2Utd2lkdGg9IjMiLz4KICAgIDxjaXJjbGUgY3g9Ijg2IiBjeT0iNDIiIHI9IjE0IiBmaWxsPSIjZmZkNmE1IiBzdHJva2U9IiNlM2ExNjUiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPGNpcmNsZSBjeD0iNDAiIGN5PSI0OCIgcj0iMTMiIGZpbGw9IiNiMWYwZGMiIHN0cm9rZT0iIzdiZDBiOSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICA8Y2lyY2xlIGN4PSI3MiIgY3k9IjIyIiByPSIxMCIgZmlsbD0iI2MzZDJmZiIgc3Ryb2tlPSIjOTZhN2U2IiBzdHJva2Utd2lkdGg9IjMiLz4KICAgIDxjaXJjbGUgY3g9IjQ4IiBjeT0iNjYiIHI9IjEyIiBmaWxsPSIjZmNhNWE1IiBzdHJva2U9IiNlMDZhNmEiIHN0cm9rZS13aWR0aD0iMyIvPgogIDwvZz4KICA8cGF0aCBkPSJNNjAgNjggTDYwIDEyMCIgc3Ryb2tlPSIjNmRiNjZkIiBzdHJva2Utd2lkdGg9IjYiLz4KPC9nPjwvc3ZnPg==" alt="花束"></div>
-          <div class="badge" data-msg="呈上真心的萬分感謝 ✨⭐️❤️"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmZmRmMyIgc3Ryb2tlPSIjZjBlNmM2Ii8+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4LDIwKSI+CiAgPHJlY3QgeD0iOCIgeT0iNDgiIHdpZHRoPSIxMTYiIGhlaWdodD0iNzIiIHJ4PSIxMiIgZmlsbD0iI2ZmZDI0ZCIgc3Ryb2tlPSIjZTBiNjQwIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cmVjdCB4PSI4IiB5PSIzNiIgd2lkdGg9IjExNiIgaGVpZ2h0PSIyMCIgcng9IjYiIGZpbGw9IiNmZmI4NGQiIHN0cm9rZT0iI2UwOWIyZiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPHJlY3QgeD0iNTYiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iODQiIHJ4PSI4IiBmaWxsPSIjZmY3YWEyIi8+CiAgPHBhdGggZD0iTTU2IDM2IGMtMTgtMTItMjgtMTAtMzIgMCA4IDEwIDE2IDEwIDMyIDB6IiBmaWxsPSIjZmY3YWEyIi8+CiAgPHBhdGggZD0iTTc2IDM2IGMxOC0xMiAyOC0xMCAzMiAwIC04IDEwLTE2IDEwLTMyIDB6IiBmaWxsPSIjZmY3YWEyIi8+CjwvZz48L3N2Zz4=" alt="禮物"></div>
+          <div class="badge" data-msg="工作辛苦了，加油 💪✨"><img id="opt1" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjZmZlZjlhIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmZkMjRkIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+CjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiByeD0iMjYiIGZpbGw9IiNmZmZkZjMiIHN0cm9rZT0iI2YwZTZjNiIvPgo8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0MCwxOCkiPgogIDxyZWN0IHg9IjMwIiB5PSIwIiB3aWR0aD0iMjAiIGhlaWdodD0iMTgiIHJ4PSI2IiBmaWxsPSIjYzhiMjdhIi8+CiAgPHJlY3QgeD0iOCIgeT0iMTYiIHdpZHRoPSI4NCIgaGVpZ2h0PSIxMTAiIHJ4PSIxOCIgZmlsbD0idXJsKCNnKSIgc3Ryb2tlPSIjYmRhMzVjIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cmVjdCB4PSIxOCIgeT0iMjgiIHdpZHRoPSI2NCIgaGVpZ2h0PSIxMCIgcng9IjQiIGZpbGw9IiNmZmYyYjgiIG9wYWNpdHk9Ii44Ii8+CiAgPHBhdGggZD0iTTU0IDU2IEw0MiA4NCBoMTYgbC0xMCAyOCAyNC0zNGgtMTR6IiBmaWxsPSIjZmY5YjAwIiBzdHJva2U9IiM4YTRmMDAiIHN0cm9rZS13aWR0aD0iMiIvPgo8L2c+PC9zdmc+" alt="能量瓶"></div>
+          <div class="badge" data-msg="工作一切順利～ 🌈"><img id="opt2" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmZmRmMyIgc3Ryb2tlPSIjZjBlNmM2Ii8+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE2LDIyKSI+CiAgPGNpcmNsZSBjeD0iNjQiIGN5PSI0OCIgcj0iMjgiIGZpbGw9IiNmZmQyNGQiIHN0cm9rZT0iI2UwYjY0MCIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGcgZmlsbD0iI2ZmZDI0ZCI+CiAgICA8cmVjdCB4PSI2MiIgeT0iOCIgd2lkdGg9IjQiIGhlaWdodD0iMTIiIHJ4PSIyIi8+PHJlY3QgeD0iNjIiIHk9Ijc2IiB3aWR0aD0iNCIgaGVpZ2h0PSIxMiIgcng9IjIiLz4KICAgIDxyZWN0IHg9IjI2IiB5PSI0NiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjQiIHJ4PSIyIi8+PHJlY3QgeD0iOTAiIHk9IjQ2IiB3aWR0aD0iMTIiIGhlaWdodD0iNCIgcng9IjIiLz4KICAgIDxyZWN0IHg9Ijg0IiB5PSIyNCIgd2lkdGg9IjQiIGhlaWdodD0iMTIiIHJ4PSIyIiB0cmFuc2Zvcm09InJvdGF0ZSg0NSA4NiAzMCkiLz4KICAgIDxyZWN0IHg9Ijg0IiB5PSI2MCIgd2lkdGg9IjQiIGhlaWdodD0iMTIiIHJ4PSIyIiB0cmFuc2Zvcm09InJvdGF0ZSgtNDUgODYgNjYpIi8+CiAgICA8cmVjdCB4PSI0MCIgeT0iMjQiIHdpZHRoPSI0IiBoZWlnaHQ9IjEyIiByeD0iMiIgdHJhbnNmb3JtPSJyb3RhdGUoLTQ1IDQyIDMwKSIvPgogICAgPHJlY3QgeD0iNDAiIHk9IjYwIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMiIgcng9IjIiIHRyYW5zZm9ybT0icm90YXRlKDQ1IDQyIDY2KSIvPgogIDwvZz4KICA8cGF0aCBkPSJNMTggOTYgYTIwIDE2IDAgMCAxIDE4LTEyIGg1MiBhMjAgMTYgMCAxIDEgMCAzMiBIMzggYTIwIDE2IDAgMCAxIC0yMC0yMCB6IiBmaWxsPSIjZTdmMmZmIiBzdHJva2U9IiNjOGRlZjgiIHN0cm9rZS13aWR0aD0iMyIvPgogIDxjaXJjbGUgY3g9IjYwIiBjeT0iNDgiIHI9IjQiIGZpbGw9IiMzMzMiLz48Y2lyY2xlIGN4PSI3NiIgY3k9IjQ4IiByPSI0IiBmaWxsPSIjMzMzIi8+CiAgPHBhdGggZD0iTTYwIDU2IHE4IDggMTYgMCIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9Im5vbmUiLz4KPC9nPjwvc3ZnPg==" alt="好天氣"></div>
+          <div class="badge" data-msg="希望今天沒有突發狀況，是順心好日子！🍀"><img id="opt3" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmZmRmMyIgc3Ryb2tlPSIjZjBlNmM2Ii8+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDIwLDE2KSI+CiAgPHBhdGggZD0iTTQ4IDExNiBsMTIgMTIgMTItMTIgOC0zMkg0MHoiIGZpbGw9IiNmZmMwY2IiIHN0cm9rZT0iI2U2OGFhMSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPGc+CiAgICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjM2IiByPSIxNiIgZmlsbD0iI2ZmYjNjNyIgc3Ryb2tlPSIjZGU3ZmEwIiBzdHJva2Utd2lkdGg9IjMiLz4KICAgIDxjaXJjbGUgY3g9Ijg2IiBjeT0iNDIiIHI9IjE0IiBmaWxsPSIjZmZkNmE1IiBzdHJva2U9IiNlM2ExNjUiIHN0cm9rZS13aWR0aD0iMyIvPgogICAgPGNpcmNsZSBjeD0iNDAiIGN5PSI0OCIgcj0iMTMiIGZpbGw9IiNiMWYwZGMiIHN0cm9rZT0iIzdiZDBiOSIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgICA8Y2lyY2xlIGN4PSI3MiIgY3k9IjIyIiByPSIxMCIgZmlsbD0iI2MzZDJmZiIgc3Ryb2tlPSIjOTZhN2U2IiBzdHJva2Utd2lkdGg9IjMiLz4KICAgIDxjaXJjbGUgY3g9IjQ4IiBjeT0iNjYiIHI9IjEyIiBmaWxsPSIjZmNhNWE1IiBzdHJva2U9IiNlMDZhNmEiIHN0cm9rZS13aWR0aD0iMyIvPgogIDwvZz4KICA8cGF0aCBkPSJNNjAgNjggTDYwIDEyMCIgc3Ryb2tlPSIjNmRiNjZkIiBzdHJva2Utd2lkdGg9IjYiLz4KPC9nPjwvc3ZnPg==" alt="花束"></div>
+          <div class="badge" data-msg="呈上真心的萬分感謝 ✨⭐️❤️"><img id="opt4" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj4KPHJlY3Qgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxNjAiIHJ4PSIyNiIgZmlsbD0iI2ZmZmRmMyIgc3Ryb2tlPSIjZjBlNmM2Ii8+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDE4LDIwKSI+CiAgPHJlY3QgeD0iOCIgeT0iNDgiIHdpZHRoPSIxMTYiIGhlaWdodD0iNzIiIHJ4PSIxMiIgZmlsbD0iI2ZmZDI0ZCIgc3Ryb2tlPSIjZTBiNjQwIiBzdHJva2Utd2lkdGg9IjMiLz4KICA8cmVjdCB4PSI4IiB5PSIzNiIgd2lkdGg9IjExNiIgaGVpZ2h0PSIyMCIgcng9IjYiIGZpbGw9IiNmZmI4NGQiIHN0cm9rZT0iI2UwOWIyZiIgc3Ryb2tlLXdpZHRoPSIzIi8+CiAgPHJlY3QgeD0iNTYiIHk9IjM2IiB3aWR0aD0iMjAiIGhlaWdodD0iODQiIHJ4PSI4IiBmaWxsPSIjZmY3YWEyIi8+CiAgPHBhdGggZD0iTTU2IDM2IGMtMTgtMTItMjgtMTAtMzIgMCA4IDEwIDE2IDEwIDMyIDB6IiBmaWxsPSIjZmY3YWEyIi8+CiAgPHBhdGggZD0iTTc2IDM2IGMxOC0xMiAyOC0xMCAzMiAwIC04IDEwLTE2IDEwLTMyIDB6IiBmaWxsPSIjZmY3YWEyIi8+CjwvZz48L3N2Zz4=" alt="禮物"></div>
         </div>
       </section>
-      <section class="page center" id="pg3"><div class="finalmsg" id="finalMsg">願您有一個閃亮閃亮的一天～ <span class="zap">⚡️</span><span class="zap">⚡️</span><span class="zap">⚡️</span></div></section>
     </div>
     <div class="btns">
       <button id="prev">上一頁</button>
       <button class="ghost" id="next">下一頁</button>
-      <button id="finish">關閉信封</button>
     </div>
     <div class="confetti" id="confetti"></div>
   </div></div>
 </div>
 <div class="popup" id="popup"><div class="popup-card"><div id="popupText"></div><button id="popupOk">pika~</button></div></div>
+<div class="finalmsg" id="finalMsg">願您有一個閃亮閃亮的一天～ ✨✨ <span class="zap">⚡️</span><span class="zap">⚡️</span><span class="zap">⚡️</span></div>
 <script>
 (function(){
   const envWrap=document.getElementById('envIntro'),envBtn=document.getElementById('envBtn'),flap=envBtn.querySelector('.env-flap'),card=document.getElementById('card'),finalMsg=document.getElementById('finalMsg');
   envBtn.onclick=()=>openCard(); envBtn.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' ')openCard();};
   function openCard(){flap.style.transform='rotateX(175deg)';envWrap.style.opacity='0';envWrap.style.transform='translateY(-10px) scale(.98)';setTimeout(()=>{envWrap.style.display='none';card.classList.add('show');fireConfetti(60);},500);}
 
-  const pages=[...document.querySelectorAll('.page')];let idx=0;const next=document.getElementById('next'),prev=document.getElementById('prev'),finish=document.getElementById('finish');
-  function show(i){pages[idx].classList.remove('active');idx=Math.max(0,Math.min(pages.length-1,i));pages[idx].classList.add('active');next.style.display= idx>=pages.length-1?'none':'inline-block';finish.style.display= idx>=pages.length-1?'inline-block':'none'; if(idx===2)fireConfetti(80);}
-  show(0); prev.onclick=()=>show(idx-1); next.onclick=()=>show(idx+1);
+  const pages=[...document.querySelectorAll('.page')];let idx=0;const next=document.getElementById('next'),prev=document.getElementById('prev');
+  function show(i){pages[idx].classList.remove('active');idx=Math.max(0,Math.min(pages.length-1,i));pages[idx].classList.add('active');next.textContent = (idx===pages.length-1)?'完成':'下一頁';}
+  show(0); prev.onclick=()=>show(idx-1); next.onclick=()=>{ if(idx===pages.length-1) closeFlow(); else show(idx+1); };
 
-  finish.onclick=()=>{ card.classList.remove('show'); envWrap.style.display='grid'; setTimeout(()=>{ envWrap.style.opacity='1'; envWrap.style.transform='none'; flap.style.transform='rotateX(0deg)'; finalMsg.classList.add('show'); animateZaps(); }, 20); fireConfetti(120); };
+  function closeFlow(){ // auto close envelope, then show blessing (longer)
+    card.classList.remove('show'); envWrap.style.display='grid';
+    setTimeout(()=>{ envWrap.style.opacity='1'; envWrap.style.transform='none'; flap.style.transform='rotateX(0deg)'; 
+      setTimeout(()=>{ finalMsg.classList.add('show'); setTimeout(()=>finalMsg.classList.remove('show'), 8000); }, 400); // show after flap closes; keep 8s
+    }, 20);
+    fireConfetti(140);
+  }
 
-  const asciiEl=document.getElementById('ascii');
+  // ASCII frames: use ascii_frames.txt if present (===FRAME=== split), else fallback
+  const asciiEl=document.getElementById('ascii'), asciiWrap=document.getElementById('asciiWrap');
   fetch('ascii_frames.txt').then(r=>r.ok?r.text():Promise.reject()).then(t=>playFrames(t.split(/\n\s*===FRAME===\s*\n/gm))).catch(()=>playFrames([
-`   (\\__/)
-   ( ^_^)  ☆
-   / >⚡`,
-`   (\\__/)
-   ( o_o)   ⚡
-   /  > ⚡`,
-`   (\\__/)
-   ( ^_^)  ☆
-   / >  ⚡`
+`  (\\__/)
+  ( ^_^)  ☆
+  / >⚡`,
+`  (\\__/)
+  ( o_o)   ⚡
+  /  > ⚡`,
+`  (\\__/)
+  ( ^_^)  ☆
+  / >  ⚡`
   ]));
-  function playFrames(frames){let i=0;function step(){asciiEl.textContent=frames[i++%frames.length];} step(); setInterval(step, 260);}
+  function playFrames(frames){let i=0;function step(){asciiEl.textContent=frames[i++%frames.length]; fitAscii();} step(); setInterval(step, 260);}
+  function fitAscii(){
+    // binary search font size so that pre fits asciiWrap (both width & height)
+    const min=8, max=24; let lo=min, hi=max, best=min;
+    while(lo<=hi){ const mid=Math.floor((lo+hi)/2); asciiEl.style.fontSize=mid+'px';
+      const r=asciiEl.getBoundingClientRect(), rw=asciiWrap.clientWidth-16, rh=asciiWrap.clientHeight-16;
+      if(r.width<=rw && r.height<=rh){best=mid; lo=mid+1;} else hi=mid-1;
+    }
+    asciiEl.style.fontSize=best+'px';
+  }
+  window.addEventListener('resize', fitAscii);
 
+  // Modal + toast
   const popup=document.getElementById('popup'),popupText=document.getElementById('popupText'),popupOk=document.getElementById('popupOk');
   function showModal(t){popupText.textContent=t;popup.classList.add('show');popupOk.focus();}
   popupOk.onclick=()=>popup.classList.remove('show'); popup.onclick=e=>{if(e.target===popup)popup.classList.remove('show');};
   function toast(x,y,text){const t=document.createElement('div');t.className='toast';t.textContent=text;t.style.left=x+'px';t.style.top=y+'px';document.body.appendChild(t);setTimeout(()=>t.remove(),1300);}
 
+  // Bind click for badges
   document.querySelectorAll('.badge').forEach(b=>{
     const handler=(e)=>{ const t=b.dataset.msg||''; showModal(t); const r=b.getBoundingClientRect(); toast(r.left+r.width/2, r.top+10+scrollY, t); };
-    b.onclick=handler; b.onkeydown=(e)=>{ if(e.key==='Enter'||e.key===' ') handler(e); };
+    b.addEventListener('click', handler);
+    b.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') handler(e); });
   });
 
-  const confetti=document.getElementById('confetti'); function fireConfetti(n=80){ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='piece'; p.style.left=Math.random()*100+'%'; p.style.background=['#ffd24d','#ff7aa2','#7dd3fc','#b1f0dc','#fca5a5'][i%5]; const sx=(Math.random()*100-50)+'vw', ex=(Math.random()*100-50)+'vw'; p.style.setProperty('--sx',sx); p.style.setProperty('--ex',ex); p.style.animationDelay=(Math.random()*300)+'ms'; confetti.appendChild(p); setTimeout(()=>p.remove(), 2000); } }
+  // Auto-load user-uploaded icons if present
+  const candidates=['png','jpg','jpeg','webp','svg'];
+  function tryLoad(id, base){ const img=document.getElementById(id); let i=0;
+    function next(){ if(i>=candidates.length) return; img.onerror=null; img.onerror=()=>{ i++; next(); }; img.src=base+'.'+candidates[i++]; } next();
+  }
+  tryLoad('opt1','opt1'); tryLoad('opt2','opt2'); tryLoad('opt3','opt3'); tryLoad('opt4','opt4');
 
-  function animateZaps(){ document.querySelectorAll('.zap').forEach((z,i)=>{ z.style.display='inline-block'; z.style.animation=`zap 900ms ${(i*180)}ms ease-in-out infinite`; }); }
-  const style=document.createElement('style'); style.textContent='@keyframes zap{0%{transform:translateY(0);opacity:.7}50%{transform:translateY(-6px);opacity:1}100%{transform:translateY(0);opacity:.7}}'; document.head.appendChild(style);
+  // Confetti
+  const confetti=document.getElementById('confetti'); function fireConfetti(n=80){ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='piece'; p.style.left=Math.random()*100+'%'; p.style.background=['#ffd24d','#ff7aa2','#7dd3fc','#b1f0dc','#fca5a5'][i%5]; const sx=(Math.random()*100-50)+'vw', ex=(Math.random()*100-50)+'vw'; p.style.setProperty('--sx',sx); p.style.setProperty('--ex',ex); p.style.animationDelay=(Math.random()*300)+'ms'; confetti.appendChild(p); setTimeout(()=>p.remove(), 2000); } }
 })();
 </script>
 </body>
