@@ -1,450 +1,249 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>感謝卡 — 防黑框檢測版</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>感謝卡 — 簡化流程版</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#fff8ec;--ink:#2b2b2b;--paper:#fffef9;--gold:#ffd24d;--pink:#ff7aa2;}
+:root{
+  --bg: #fff8ec;
+  --paper: #fffef9;
+  --ink: #222;
+  --gold: #ffd24d;
+  --hint: #111;
+  --radius: 22px;
+}
 *{box-sizing:border-box}
-html,body{height:100%;}
-body{margin:0;background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));
-  color:var(--ink);font-family:ui-rounded,'Noto Sans TC',system-ui,-apple-system,Arial,Segoe UI;
-  display:flex;align-items:center;justify-content:center;overflow:hidden}
-.stage{position:relative;width:min(960px,96vw);height:min(680px,94svh);}
-@supports not (height: 1svh){ .stage{height:min(680px,94vh);} }
-
-/* ---------- Intro (envelope) ---------- */
-.intro{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .5s,transform .5s;}
-#envArea{position:relative;width:min(560px,94vw);aspect-ratio:16/10;display:grid;place-items:center}
-#envCustom{position:absolute;inset:0;display:none;border-radius:18px;overflow:hidden;box-shadow:0 16px 46px rgba(0,0,0,.18);background:transparent}
-#envCustom .holder{position:absolute;inset:0}
-#envCustom video,#envCustom img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent}
-#envDefault{position:absolute;inset:0;border-radius:18px;background:#fff;box-shadow:0 16px 46px rgba(0,0,0,.18);display:grid;place-items:center}
-.envelope{position:relative;width:min(440px,82%);height:min(280px,62%);}
-.env-body{position:absolute;inset:0;background:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
-.env-flap{position:absolute;left:0;right:0;top:0;height:62%;background:linear-gradient(#ffe27a,#ffd24d);
-  clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;border-top-left-radius:14px;border-top-right-radius:14px;transition:transform .7s cubic-bezier(.2,.9,.2,1.2)}
-.hint{position:absolute;right:8px;bottom:8px;background:#111;color:#fff;padding:.6rem 1rem;border-radius:12px;font-weight:800;letter-spacing:.3px;box-shadow:0 8px 20px rgba(0,0,0,.2);user-select:none}
-.clickmask{position:absolute;inset:0;cursor:pointer;outline:none;border-radius:18px}
-/* 盾牌：覆蓋影片直到偵測到非黑畫面 */
-.shield{position:absolute;inset:0;border-radius:18px;background:#fff;display:grid;place-items:center;opacity:1;transition:opacity .35s ease}
-.shield.hide{opacity:0;pointer-events:none}
-
-/* ---------- Card ---------- */
-.card{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transform:translateY(10px) scale(.98);transition:opacity .7s,transform .7s;}
-.card.show{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}
-.paper{width:100%;height:100%;background:var(--paper);border-radius:20px;
-  box-shadow:0 18px 60px rgba(0,0,0,.12),0 4px 16px rgba(0,0,0,.06);position:relative;overflow:hidden;}
-.pages{position:absolute;inset:0;}
-.page{position:absolute;inset:0;padding:20px clamp(14px,4vw,42px);opacity:0;transform:translateY(10px);transition:opacity .45s,transform .45s;overflow:auto;}
-.page.active{opacity:1;transform:translateY(0)}
-.center{display:grid;place-items:center;text-align:center;height:100%}
-
-/* ASCII 區域（可文字或媒體） */
-.ascii-wrap{position:relative;width:100%;height:calc(100% - 96px);border-radius:12px;background:#fffdf6;box-shadow:inset 0 0 0 1px #f3edd7;overflow:hidden}
-.ascii-plate{position:absolute;left:12px;top:12px;transform-origin:top left}
-pre.ascii{margin:0;white-space:pre;line-height:1.06;font-family:ui-monospace,Menlo,Consolas,'Noto Sans Mono CJK TC',monospace;font-size:14px;display:inline-block}
-#asciiMedia{position:absolute;inset:0;display:none;align-items:center;justify-content:center}
-#asciiMedia video,#asciiMedia img{max-width:100%;max-height:100%;object-fit:contain;background:transparent}
-.pika-note{position:absolute;top:10px;left:12px;color:#b08b00;font-weight:700;letter-spacing:.5px;opacity:.95}
-.pika-note::after{content:' \\266A'}
-
-/* 4 圖 */
-.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;margin-top:6px;}
-.badge{position:relative;display:grid;place-items:center;background:#fffdf3;border:1px solid #f0e6c6;border-radius:16px;padding:12px;cursor:pointer;user-select:none;min-height:160px;text-decoration:none;color:inherit}
-.badge img{width:min(42vw,170px);height:min(42vw,170px);object-fit:contain;display:block}
-
-/* 導覽按鈕 */
-.btns{position:absolute;right:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
-button{appearance:none;border:none;padding:.75rem 1.05rem;border-radius:12px;font-weight:700;cursor:pointer;background:#111;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.15);font-size:16px}
-button.ghost{background:var(--gold);color:#3b2a00}
-
-/* CSS 文字彈窗（:target） */
-.layer{position:fixed;inset:0;background:rgba(0,0,0,.38);display:none;place-items:center;z-index:50}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: ui-rounded, "Noto Sans TC", system-ui, -apple-system, Segoe UI, Arial;
+  background: radial-gradient(1200px 800px at 20% 20%, #fffaf0, var(--bg));
+  color: var(--ink);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.stage{
+  width:min(980px,96vw);
+  height:min(700px,94svh);
+  position:relative;
+}
+@supports not (height: 1svh){ .stage{height:min(700px,94vh);} }
+.card{
+  position:absolute; inset:0;
+  background:var(--paper);
+  border-radius: var(--radius);
+  box-shadow:0 20px 60px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.07);
+  overflow:hidden;
+  display:grid; grid-template-rows: 1fr auto;
+}
+.pages{position:relative; overflow:hidden}
+.page{
+  position:absolute; inset:0;
+  opacity:0; transform: translateY(10px) scale(.98);
+  transition: .45s ease;
+  padding: clamp(12px, 3vw, 28px);
+  display:grid; place-items:center;
+}
+.page.active{opacity:1; transform:none}
+/* --- page: video full area --- */
+.vbox{
+  position:relative;
+  width:100%; height:100%;
+  display:grid; place-items:center;
+  background:#fff; /* 防黑背景，poster下也好看 */
+  border-radius: 16px;
+}
+.vbox video, .vbox img{
+  width:100%; height:100%;
+  object-fit:contain; background:transparent; display:block;
+}
+.hint{position:absolute; right:10px; bottom:10px; background:var(--hint); color:#fff; padding:.6rem 1rem; border-radius:12px; font-weight:800; box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.playmask{position:absolute; inset:0; cursor:pointer; background:transparent; border:none}
+.shield{position:absolute; inset:0; background:#fff; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.03); transition: opacity .35s ease; opacity:1}
+.shield.hide{opacity:0; pointer-events:none}
+/* --- ascii page bg --- */
+.p2wrap{position:relative; width:100%; height:100%; background:#111; border-radius:16px; display:grid; place-items:center}
+.p2wrap video{width:100%; height:100%; object-fit:contain; background:transparent}
+/* --- grid 4 --- */
+.grid4{display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100%}
+.badge{display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px; background:#fffdf3; text-decoration:none; color:inherit; min-height:180px}
+.badge img{width:min(42vw,200px); height:min(42vw,200px); object-fit:contain}
+/* --- nav --- */
+.nav{display:flex; gap:10px; justify-content:flex-end; padding:10px}
+button.btn{appearance:none; border:none; padding:.8rem 1.1rem; border-radius:12px; background:#111; color:#fff; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.12)}
+button.btn.alt{background:var(--gold); color:#3b2a00}
+/* --- popup target --- */
+.layer{position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; place-items:center; z-index:50}
 .layer:target{display:grid}
-.layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.28);
-  max-width:min(92vw,720px);width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6}
-.layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
-.layer .bgclose{position:absolute;inset:0;content:"";display:block}
-
-/* Effects */
-#fxCanvas{position:fixed;inset:0;pointer-events:none;z-index:30;opacity:0;transition:opacity .35s ease}
+.layer .box{background:#fff; color:#222; padding:22px; border-radius:16px; width:min(92vw,720px); text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6; box-shadow:0 16px 44px rgba(0,0,0,.28)}
+.layer .ok{display:inline-block; margin-top:14px; background:#111; color:#fff; padding:.7rem 1.1rem; border-radius:12px; text-decoration:none; font-weight:800}
+.layer .bgclose{position:absolute; inset:0; content:""; display:block}
+/* --- finale overlay --- */
+.final-msg{position:absolute; inset:0; display:none; place-items:center; background:rgba(255,255,255,.0)}
+.final-msg .inner{text-align:center}
+.final-msg .jp{font-weight:900; letter-spacing:.04em; font-size:clamp(28px, 5vw, 72px)}
+.final-msg .jp small{display:block; font-size:.45em; opacity:.75; margin-top:.2em}
+.final-msg .btns{margin-top:16px; display:flex; gap:10px; justify-content:center}
+.shareLayer{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:60}
+.shareLayer.show{display:grid}
+.shareCard{background:#fff; padding:20px; border-radius:16px; width:min(92vw,420px); box-shadow:0 16px 44px rgba(0,0,0,.33); text-align:center}
+.shareCard .qr{display:grid; place-items:center; margin:10px auto}
+.shareCard .row{display:flex; gap:8px; justify-content:center; margin-top:8px}
+.copyNote{font-size:13px; color:#666; margin-top:6px}
 </style>
 </head>
 <body>
-<canvas id="fxCanvas"></canvas>
-
 <div class="stage">
-  <!-- Intro -->
-  <section class="intro" id="intro">
-    <div id="envArea">
-      <div id="envCustom">
-        <div class="holder"></div>
-        <div class="shield" id="introShield">
-          <div class="envelope"><div class="env-body"></div><div class="env-flap"></div></div>
+  <div class="card">
+    <div class="pages">
+      <!-- Page 1: envelope_open.mp4 -->
+      <section class="page active" id="p1">
+        <div class="vbox" id="p1box">
+          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted></video>
+          <div class="shield" id="shield1"></div>
+          <button class="playmask" id="playIntro" aria-label="點擊播放"></button>
+          <div class="hint">點一下播放</div>
         </div>
-      </div>
-      <div id="envDefault">
-        <div class="envelope"><div class="env-body"></div><div class="env-flap"></div></div>
-      </div>
-      <div class="hint">點信封動畫</div>
-      <button class="clickmask" id="startBtn" aria-label="點擊開始播放動畫"></button>
-    </div>
-  </section>
-
-  <!-- Card pages -->
-  <section class="card" id="card" aria-labelledby="cardTop">
-    <div class="paper">
-      <div class="pages">
-        <article class="page center active" id="pg1">
-          <div class="ascii-wrap" id="asciiWrap">
-            <div class="ascii-plate" id="asciiPlate"><pre class="ascii" id="ascii">Loading…</pre></div>
-            <div id="asciiMedia"><!-- 可放 json/video/gif --></div>
+      </section>
+      <!-- Page 2: ascii_anim.mp4 -->
+      <section class="page" id="p2">
+        <div class="p2wrap" id="p2wrap">
+          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop></video>
+        </div>
+      </section>
+      <!-- Page 3: four images with popups -->
+      <section class="page" id="p3">
+        <div class="grid4">
+          <a class="badge" href="#pop1"><img id="slot1" alt="能量瓶"></a>
+          <a class="badge" href="#pop2"><img id="slot2" alt="好天氣"></a>
+          <a class="badge" href="#pop3"><img id="slot3" alt="花束"></a>
+          <a class="badge" href="#pop4"><img id="slot4" alt="禮物"></a>
+        </div>
+      </section>
+      <!-- Page 4: finale.mp4 + thanks -->
+      <section class="page" id="p4">
+        <div class="vbox" id="p4box">
+          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted></video>
+          <div class="shield" id="shield4"></div>
+          <div class="final-msg" id="finalMsg">
+            <div class="inner">
+              <div class="jp">ありがとうございます<small>いつも応援してくれて、ほんとうに感謝です。</small></div>
+              <div class="btns">
+                <button class="btn alt" id="btnReplay">再一次</button>
+                <button class="btn" id="btnShare">分享</button>
+              </div>
+            </div>
           </div>
-          <div class="pika-note">pika~pika</div>
-        </article>
-        <article class="page" id="pg2">
-          <div class="grid4">
-            <a href="#pop1" class="badge"><img id="slot1" alt="slot1"></a>
-            <a href="#pop2" class="badge"><img id="slot2" alt="slot2"></a>
-            <a href="#pop3" class="badge"><img id="slot3" alt="slot3"></a>
-            <a href="#pop4" class="badge"><img id="slot4" alt="slot4"></a>
-          </div>
-        </article>
-      </div>
-      <div class="btns">
-        <button id="prev">上一頁</button>
-        <button class="ghost" id="next">下一頁</button>
-      </div>
+        </div>
+      </section>
     </div>
-  </section>
+    <div class="nav">
+      <button class="btn" id="btnPrev">上一頁</button>
+      <button class="btn alt" id="btnNext">下一頁</button>
+    </div>
+  </div>
 </div>
 
-<!-- 四個 CSS 文字彈窗（:target） -->
-<section id="pop1" class="layer">
-  <a href="#card" class="bgclose" aria-label="關閉"></a>
-  <div class="box">工作辛苦了，加油 💪✨<br/><a class="ok" href="#card">pika~</a></div>
-</section>
-<section id="pop2" class="layer">
-  <a href="#card" class="bgclose" aria-label="關閉"></a>
-  <div class="box">工作一切順利～ 🌈<br/><a class="ok" href="#card">pika~</a></div>
-</section>
-<section id="pop3" class="layer">
-  <a href="#card" class="bgclose" aria-label="關閉"></a>
-  <div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br/><a class="ok" href="#card">pika~</a></div>
-</section>
-<section id="pop4" class="layer">
-  <a href="#card" class="bgclose" aria-label="關閉"></a>
-  <div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br/><a class="ok" href="#card">pika~</a></div>
-</section>
+<!-- popups -->
+<section id="pop1" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作辛苦了，加油 💪✨<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop2" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作一切順利～ 🌈<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop3" class="layer"><a href="#p3" class="bgclose"></a><div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop4" class="layer"><a href="#p3" class="bgclose"></a><div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="ok" href="#p3">pika~</a></div></section>
+
+<!-- share modal -->
+<div class="shareLayer" id="shareLayer">
+  <div class="shareCard">
+    <h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
+    <div id="qr" class="qr"></div>
+    <div class="row">
+      <button class="btn" id="copyUrl">複製網址</button>
+      <button class="btn alt" id="closeShare">關閉</button>
+    </div>
+    <div class="copyNote" id="copyNote"></div>
+  </div>
+</div>
 
 <script>
 (function(){
-  /* ---------- helpers ---------- */
-  const imgExts = ['png','jpg','jpeg','webp','svg'];
-  function tryAnyImage(imgEl, bases){
-    let bi=0; (function nextBase(){
-      if(bi>=bases.length){ setPlaceholder(imgEl); return; }
-      let i=0; (function attempt(){
-        if(i>=imgExts.length){ bi++; nextBase(); return; }
-        const url = bases[bi] + '.' + imgExts[i++];
-        const t = new Image(); t.onload=()=>imgEl.src=url; t.onerror=attempt; t.src=url;
-      })();
-    })();
-  }
-  function setPlaceholder(img){
-    const svg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" rx="26" fill="#fffdf3" stroke="#f0e6c6"/><g transform="translate(20,18)"><rect x="8" y="12" width="112" height="120" rx="18" fill="#ffd24d"/><path d="M40 70 h80" stroke="#e6b642" stroke-width="6"/><path d="M40 92 h56" stroke="#e6b642" stroke-width="6"/></g></svg>');
-    img.src = 'data:image/svg+xml;utf8,'+svg;
-  }
-  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-  async function fetchTextOrNull(url){
-    try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) return null; return await r.text(); }catch(e){ return null; }
-  }
-  function waitEvent(target, ev, timeout){
-    return new Promise((res,rej)=>{
-      const to = timeout? setTimeout(()=>{cleanup(); rej(new Error('timeout'))}, timeout):null;
-      const fn = ()=>{ cleanup(); res(); };
-      function cleanup(){ target.removeEventListener(ev,fn); if(to) clearTimeout(to); }
-      target.addEventListener(ev,fn,{once:true});
-    });
-  }
-  function frameNotBlack(video){
-    try{
-      if(!video.videoWidth || !video.videoHeight) return false;
-      const w = 64, h = Math.max(1, Math.round(64*video.videoHeight/video.videoWidth));
-      const c = frameNotBlack._c || (frameNotBlack._c=document.createElement('canvas'));
-      const ctx = c.getContext('2d',{willReadFrequently:true});
-      c.width=w; c.height=h;
-      ctx.drawImage(video,0,0,w,h);
-      const d = ctx.getImageData(0,0,w,h).data;
-      // 計算亮度平均（Y=0.2126R+0.7152G+0.0722B）
-      let sum=0, N=w*h;
-      for(let i=0;i<d.length;i+=4){
-        const y=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
-        sum+=y;
-      }
-      const avg = sum/N;
-      return avg > 8; // >8 很暗, 視為黑畫面
-    }catch(e){ return false; }
-  }
+  const pages=[...document.querySelectorAll('.page')];
+  let idx=0;
+  const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
+  function show(i){ pages[idx].classList.remove('active'); idx=Math.max(0,Math.min(pages.length-1,i)); pages[idx].classList.add('active'); next.textContent=(idx===pages.length-1)?'完成':'下一頁'; }
+  prev.onclick=()=>show(idx-1);
+  next.onclick=()=>{ if(idx===0 && !introEnded){ /* 若還沒播完就提示 */ return; } if(idx===pages.length-1){ return; } show(idx+1); };
+  show(0);
 
-  /* ---------- Intro with shield + non-black detection ---------- */
-  const intro = document.getElementById('intro');
-  const envCustom = document.getElementById('envCustom');
-  const envDefault = document.getElementById('envDefault');
-  const holder = envCustom.querySelector('.holder');
-  const shield = document.getElementById('introShield');
-  const flapDefault = envDefault.querySelector('.env-flap');
-  const startBtn = document.getElementById('startBtn');
-
-  let introPlay = null;
-  (async function prepareIntro(){
-    // Lottie
-    try{
-      const jr = await fetch('envelope_open.json',{cache:'no-store'});
-      if(jr.ok){
-        const data = await jr.json();
-        const box = document.createElement('div'); box.style.cssText='position:absolute;inset:0';
-        holder.appendChild(box);
-        const anim = lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:false,animationData:data});
-        introPlay = ()=> new Promise(resolve=>{
-          envDefault.style.display='none'; envCustom.style.display='block';
-          shield.classList.remove('hide'); anim.goToAndStop(0,true); anim.play();
-          setTimeout(()=>shield.classList.add('hide'), 350);
-          anim.addEventListener('complete', resolve); setTimeout(resolve, 9000);
-        });
-        return;
-      }
-    }catch(e){}
-
-    // Video
-    const vCands=['envelope_open.mp4','envelope_open.webm'];
-    for(const src of vCands){
-      if(await canPlayVideo(src)){
-        const v=document.createElement('video');
-        v.src=src; v.playsInline=true; v.setAttribute('playsinline',''); v.muted=true; v.controls=false; v.autoplay=false; v.preload='auto';
-        v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent';
-        holder.appendChild(v);
-        introPlay = async ()=>{
-          envDefault.style.display='none'; envCustom.style.display='block'; shield.classList.remove('hide');
-          v.currentTime=0.03;
-          try { await v.play(); } catch(e) {}
-          // 等 playing + 第一個非黑畫面
-          await waitEvent(v,'playing',1500).catch(()=>{});
-          let tries=0; while(tries++<30){ if(frameNotBlack(v)) break; await new Promise(r=>requestAnimationFrame(r)); }
-          shield.classList.add('hide');
-          await waitEvent(v,'ended',15000).catch(()=>{});
-        };
-        return;
-      }
-    }
-
-    // Animated image
-    const iCands=['envelope_open.gif','envelope_open.apng','envelope_open.webp','envelope_open.svg'];
-    for(const src of iCands){
-      if(await canLoadImage(src)){
-        const img=document.createElement('img'); img.src=src; holder.appendChild(img);
-        introPlay = async ()=>{ envDefault.style.display='none'; envCustom.style.display='block'; shield.classList.add('hide'); await sleep(3200); };
-        return;
-      }
-    }
-
-    // Fallback：CSS flap
-    introPlay = async ()=>{ flapDefault.style.transform='rotateX(175deg)'; await sleep(650); };
+  // ---------- Page 1 (intro video) ----------
+  const vIntro=document.getElementById('vIntro');
+  const shield1=document.getElementById('shield1');
+  const playIntro=document.getElementById('playIntro');
+  // set poster & src
+  fetch('poster.png',{cache:'no-store'}).then(r=>{ if(r.ok) vIntro.setAttribute('poster','poster.png'); }).catch(()=>{});
+  // prefer mp4 then webm
+  (async ()=>{
+    const cand=['envelope_open.mp4','envelope_open.webm','envelope_open.gif','envelope_open.apng','envelope_open.webp','envelope_open.svg'];
+    for(const src of cand){ if(await exists(src)){ vIntro.src=src; break; } }
   })();
-
-  function canPlayVideo(url){
-    return new Promise((resolve)=>{
-      const v=document.createElement('video');
-      const mp4OK = !!v.canPlayType && (v.canPlayType('video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"') || v.canPlayType('video/mp4'));
-      const webmOK = !!v.canPlayType && (v.canPlayType('video/webm; codecs=\"vp9,opus\"') || v.canPlayType('video/webm'));
-      if(url.endsWith('.mp4') && !mp4OK){ resolve(false); return; }
-      if(url.endsWith('.webm') && !webmOK){ resolve(false); return; }
-      v.src=url; v.muted=true; v.playsInline=true;
-      const to=setTimeout(()=>resolve(false), 2500);
-      v.onloadeddata=()=>{ clearTimeout(to); resolve(true); };
-      v.onerror=()=>{ clearTimeout(to); resolve(false); };
-    });
-  }
-  function canLoadImage(url){
-    return new Promise((resolve)=>{
-      const im = new Image(); const to=setTimeout(()=>resolve(false), 2000);
-      im.onload=()=>{ clearTimeout(to); resolve(true); };
-      im.onerror=()=>{ clearTimeout(to); resolve(false); };
-      im.src=url + '?v=' + Date.now();
-    });
-  }
-
-  const card=document.getElementById('card');
-  document.getElementById('startBtn').addEventListener('click', async ()=>{
-    if(introPlay) await introPlay();
-    intro.style.opacity='0'; intro.style.transform='translateY(-10px) scale(.98)';
-    await sleep(350); intro.style.display='none'; card.classList.add('show');
+  async function exists(url){ try{ const r=await fetch(url,{method:'HEAD',cache:'no-store'}); return r.ok; }catch(e){ return false; } }
+  let introEnded=false;
+  playIntro.addEventListener('click', async ()=>{
+    try{ await vIntro.play(); }catch(e){}
   });
+  vIntro.addEventListener('playing', ()=>{ shield1.classList.add('hide'); });
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.click(); });
+  vIntro.addEventListener('loadeddata', ()=>{ /* keep poster until playing */ });
 
-  /* ---------- Pages ---------- */
-  const pages=[...document.querySelectorAll('.page')]; let idx=0;
-  const next=document.getElementById('next'), prev=document.getElementById('prev');
-  function show(i){ pages[idx].classList.remove('active'); idx=Math.max(0,Math.min(pages.length-1,i)); pages[idx].classList.add('active');
-    next.textContent=(idx===pages.length-1)?'完成':'下一頁'; }
-  show(0); prev.onclick=()=>show(idx-1); next.onclick=()=>{ if(idx===pages.length-1) finishFlow(); else show(idx+1); };
-
-  /* ---------- ASCII 區 ---------- */
-  const asciiMedia=document.getElementById('asciiMedia');
-  const asciiEl=document.getElementById('ascii'), plate=document.getElementById('asciiPlate'), wrap=document.getElementById('asciiWrap');
-
-  (async function detectAscii(){
-    try{
-      const jr = await fetch('ascii_anim.json',{cache:'no-store'});
-      if(jr.ok){
-        const data = await jr.json();
-        asciiMedia.style.display='flex'; asciiEl.parentElement.style.display='none';
-        const box=document.createElement('div'); box.style.cssText='width:100%;height:100%'; asciiMedia.appendChild(box);
-        lottie.loadAnimation({container:box,renderer:'svg',loop:true,autoplay:true,animationData:data});
-        return;
-      }
-    }catch(e){}
-
-    const vCands=['ascii_anim.mp4','ascii_anim.webm'];
-    for(const src of vCands){
-      if(await canPlayVideo(src)){
-        asciiMedia.style.display='flex'; asciiEl.parentElement.style.display='none';
-        const v=document.createElement('video'); v.src=src; v.autoplay=true; v.loop=true; v.muted=true; v.playsInline=true; v.setAttribute('playsinline','');
-        asciiMedia.appendChild(v); return;
-      }
-    }
-    const iCands=['ascii_anim.gif','ascii_anim.apng','ascii_anim.webp','ascii_anim.svg'];
-    for(const src of iCands){
-      if(await canLoadImage(src)){
-        asciiMedia.style.display='flex'; asciiEl.parentElement.style.display='none';
-        const img=document.createElement('img'); img.src=src; asciiMedia.appendChild(img); return;
-      }
-    }
-    const text = await fetchTextOrNull('ascii_frames.txt');
-    if(text){ const frames = text.split(/\n\s*===FRAME===\s*\n/gm); playFrames(frames); }
-    else{ playFrames([`(\\__/)\n( ^_^) ☆\n/ >⚡`,`(\\__/)\n( o_o) ⚡\n/  > ⚡`,`(\\__/)\n( ^_^) ☆\n/ >  ⚡`]); }
+  // ---------- Page 2 (ascii video; sample bg color) ----------
+  const vAscii=document.getElementById('vAscii');
+  const p2wrap=document.getElementById('p2wrap');
+  (async ()=>{
+    const cand=['ascii_anim.mp4','ascii_anim.webm','ascii_anim.gif','ascii_anim.apng','ascii_anim.webp','ascii_anim.svg'];
+    for(const src of cand){ if(await exists(src)){ vAscii.src=src; break; } }
   })();
+  vAscii.addEventListener('loadeddata', ()=>{ try{ vAscii.play().catch(()=>{}); }catch(e){} sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }); });
+  async function sampleBg(video){ try{ if(!video.videoWidth) return null; const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth)); const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true}); c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h); const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0; for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;} r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n); return `rgb(${r},${g},${b})`; }catch(e){ return null; } }
 
-  function playFrames(frames){let i=0;function step(){asciiEl.textContent=frames[i++%frames.length]; fitAscii();} step(); setInterval(step, 260);}
-  function fitAscii(){ plate.style.transform='scale(1)'; const r=plate.getBoundingClientRect(), rw=wrap.clientWidth-24, rh=wrap.clientHeight-24;
-    const s = Math.min(rw/Math.max(r.width,1), rh/Math.max(r.height,1), 1); plate.style.transform='scale('+s+')'; }
-  addEventListener('resize', fitAscii);
+  // ---------- Page 3: load four images (slot1-4.*) ----------
+  const exts=['png','jpg','jpeg','webp','svg'];
+  function loadImg(id,bases){ const el=document.getElementById(id); (function tryNextBase(bi){ if(bi>=bases.length){ el.alt=''; return; } (function tryExt(i){ if(i>=exts.length){ tryNextBase(bi+1); return; } const url=bases[bi]+'.'+exts[i]; const t=new Image(); t.onload=()=>el.src=url; t.onerror=()=>tryExt(i+1); t.src=url; })(0); })(0); }
+  loadImg('slot1',['slot1','pic1','opt1']); loadImg('slot2',['slot2','pic2','opt2']); loadImg('slot3',['slot3','pic3','opt3']); loadImg('slot4',['slot4','pic4','opt4']);
 
-  /* ---------- 四圖 ---------- */
-  function loadSlots(){
-    const slots=[
-      {img:document.getElementById('slot1'), bases:['slot1','pic1','opt1']},
-      {img:document.getElementById('slot2'), bases:['slot2','pic2','opt2']},
-      {img:document.getElementById('slot3'), bases:['slot3','pic3','opt3']},
-      {img:document.getElementById('slot4'), bases:['slot4','pic4','opt4']}
-    ]; slots.forEach(s=>tryAnyImage(s.img,s.bases));
-  } loadSlots();
+  // ---------- Page 4 (finale) ----------
+  const vFinale=document.getElementById('vFinale');
+  const shield4=document.getElementById('shield4');
+  const finalMsg=document.getElementById('finalMsg');
+  (async ()=>{ const cand=['finale.mp4','finale.webm','finale.gif','finale.apng','finale.webp','finale.svg']; for(const src of cand){ if(await exists(src)){ vFinale.src=src; break; } } })();
+  vFinale.addEventListener('playing', ()=>{ shield4.classList.add('hide'); });
+  vFinale.addEventListener('loadeddata', ()=>{ try{ vFinale.play().catch(()=>{}); }catch(e){} });
+  vFinale.addEventListener('ended', ()=>{ finalMsg.style.display='grid'; });
 
-  /* ---------- Finale（也做非黑偵測） ---------- */
-  async function finishFlow(){
-    card.classList.remove('show');
-    envCustom.style.display='block'; envDefault.style.display='grid';
-    const shield2 = document.getElementById('introShield').cloneNode(true);
-    shield2.id = 'finalShield'; shield2.classList.remove('hide');
-    envCustom.appendChild(shield2);
-    holder.innerHTML='';
+  // buttons in final message
+  document.getElementById('btnReplay').onclick = ()=>{
+    // reset all
+    finalMsg.style.display='none'; shield4.classList.remove('hide'); vFinale.pause(); vFinale.currentTime=0;
+    shield1.classList.remove('hide'); vIntro.pause(); vIntro.currentTime=0; introEnded=false;
+    vAscii.pause(); vAscii.currentTime=0;
+    show(0);
+  };
 
-    let play=null;
-
-    try{
-      const jr = await fetch('finale.json',{cache:'no-store'});
-      if(jr.ok){
-        const data = await jr.json();
-        const box = document.createElement('div'); box.style.cssText='position:absolute;inset:0';
-        holder.appendChild(box);
-        const anim = lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:false,animationData:data});
-        play = ()=> new Promise(res=>{ envDefault.style.display='none'; setTimeout(()=>shield2.classList.add('hide'), 350); anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete',res); setTimeout(res,9000); });
-      }
-    }catch(e){}
-
-    if(!play){
-      const vCands=['finale.mp4','finale.webm'];
-      for(const src of vCands){
-        if(await canPlayVideo(src)){
-          const v=document.createElement('video'); v.src=src; v.playsInline=true; v.setAttribute('playsinline',''); v.muted=true; v.controls=false; v.autoplay=false; v.preload='auto';
-          v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent';
-          holder.appendChild(v);
-          play = async ()=>{
-            envDefault.style.display='none'; v.currentTime=0.03;
-            try{ await v.play(); } catch(e){}
-            await waitEvent(v,'playing',1500).catch(()=>{});
-            let tries=0; while(tries++<30){ if(frameNotBlack(v)) break; await new Promise(r=>requestAnimationFrame(r)); }
-            shield2.classList.add('hide');
-            await waitEvent(v,'ended',15000).catch(()=>{});
-          };
-          break;
-        }
-      }
-    }
-    if(!play){
-      const iCands=['finale.gif','finale.apng','finale.webp','finale.svg'];
-      for(const src of iCands){
-        if(await canLoadImage(src)){
-          const img=document.createElement('img'); img.src=src; holder.appendChild(img);
-          play = async ()=>{ envDefault.style.display='none'; shield2.classList.add('hide'); await sleep(3200); };
-          break;
-        }
-      }
-    }
-
-    if(play){ try{ await play(); }catch(e){} }
-    await sparkleText('ありがとうございます', 3200);
-  }
-
-  /* ---------- Effects canvas（顆粒） ---------- */
-  const canvas=document.getElementById('fxCanvas'), ctx=canvas.getContext('2d');
-  function resizeCanvas(){ const dpr=window.devicePixelRatio||1; canvas.width=innerWidth*dpr; canvas.height=innerHeight*dpr; canvas.style.width=innerWidth+'px'; canvas.style.height=innerHeight+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); }
-  resizeCanvas(); addEventListener('resize', resizeCanvas);
-
-  function sparkleText(text,total=2600){
-    return new Promise(resolve=>{
-      resizeCanvas(); canvas.style.opacity='1';
-      const W=innerWidth, H=innerHeight;
-      const off=document.createElement('canvas'), octx=off.getContext('2d'); off.width=W; off.height=H;
-      function fitFont(){
-        let fs = Math.min(140, Math.max(60, Math.floor(W*0.18)));
-        for(let k=0;k<10;k++){
-          octx.font='900 '+fs+'px "Noto Sans JP","Noto Sans CJK JP","Noto Sans CJK TC",system-ui,Arial';
-          const w = octx.measureText(text).width;
-          const scaleW = (W*0.86)/w;
-          const scaleH = (H*0.34)/fs;
-          const scale = Math.min(scaleW, scaleH, 1);
-          const newFs = Math.max(40, Math.floor(fs*scale));
-          if(Math.abs(newFs-fs)<1) break;
-          fs = newFs;
-        }
-        return fs;
-      }
-      const fontSize = fitFont();
-      octx.font='900 '+fontSize+'px "Noto Sans JP","Noto Sans CJK JP","Noto Sans CJK TC",system-ui,Arial';
-      octx.fillStyle='#000'; octx.textAlign='center'; octx.textBaseline='middle';
-      octx.fillText(text, W/2, H*0.43);
-      const step=6, img=octx.getImageData(0,0,W,H).data, targets=[];
-      for(let y=0;y<H;y+=step){
-        for(let x=0;x<W;x+=step){ if(img[(y*W+x)*4+3]>160) targets.push({x,y}); }
-      }
-      const maxP=1400; if(targets.length>maxP){ const r=maxP/targets.length; const pick=[]; for(let i=0;i<targets.length;i++) if(Math.random()<r) pick.push(targets[i]); targets.splice(0,targets.length,...pick); }
-      const parts=targets.map(t=>({x:W/2,y:H*0.55,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.6)*3,tx:t.x,ty:t.y,sz:1+Math.random()*1.6,h:Math.floor(45+Math.random()*50),s:Math.random()*60}));
-      const start=performance.now(), mid=start+total*0.35, end=start+total;
-      (function frame(now){
-        ctx.clearRect(0,0,W,H); ctx.fillStyle='rgba(255,255,255,0.02)'; ctx.fillRect(0,0,W,H);
-        for(const p of parts){
-          if(now<mid){ p.x+=p.vx; p.y+=p.vy; } else { const k=0.08; p.vx+=(p.tx-p.x)*k; p.vy+=(p.ty-p.y)*k; p.x+=p.vx; p.y+=p.vy; p.vx*=0.86; p.vy*=0.86; }
-          const hue=70+p.h; const a=0.7+0.3*Math.sin((now/120)+p.s);
-          ctx.fillStyle='hsla('+ (hue) +',100%,60%,'+a.toFixed(2)+')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.sz,0,Math.PI*2); ctx.fill();
-          if(Math.random()<0.05){ ctx.strokeStyle='hsla('+ (hue) +',100%,80%,0.8)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(p.x-3,p.y); ctx.lineTo(p.x+3,p.y); ctx.moveTo(p.x,p.y-3); ctx.lineTo(p.x,p.y+3); ctx.stroke(); }
-        }
-        if(now<end) requestAnimationFrame(frame); else { canvas.style.opacity='0'; setTimeout(()=>{ ctx.clearRect(0,0,W,H); resolve(); }, 350); }
-      })(start);
-    });
+  // share modal + QR
+  const shareLayer=document.getElementById('shareLayer');
+  document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
+  document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
+  document.getElementById('copyUrl').onclick=async ()=>{
+    const url=location.href.split('#')[0];
+    try{ await navigator.clipboard.writeText(url); document.getElementById('copyNote').textContent='已複製網址 ✔'; }
+    catch(e){ document.getElementById('copyNote').textContent=url; }
+  };
+  function buildQR(){
+    const box=document.getElementById('qr'); box.innerHTML='';
+    if(window.QRCode){ new QRCode(box, {text: location.href.split('#')[0], width: 220, height: 220}); }
+    else { box.textContent = location.href.split('#')[0]; }
   }
 })();
 </script>
