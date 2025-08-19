@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — flow_fixed</title>
+<title>感謝卡 — Autoplay Flow</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -21,44 +21,38 @@ body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Sego
 .page{position:absolute;inset:0;opacity:0;transform:translateY(10px) scale(.98);
       transition:.45s ease;padding:clamp(12px,3vw,28px);display:grid;place-items:center}
 .page.active{opacity:1;transform:none}
-
-/* video area */
+/* video boxes */
 .vbox{position:relative;width:100%;height:100%;display:grid;place-items:center;background:#fff;border-radius:16px;overflow:hidden}
-.vbox video{width:100%;height:100%;object-fit:contain;background:transparent;display:block}
-.playBtn{position:absolute;right:14px;bottom:14px;z-index:6;border:none;border-radius:14px;
-         background:#111;color:#fff;padding:.7rem 1rem;font-weight:800;
-         box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;gap:.45rem}
-.playBtn .tri{display:inline-block;width:0;height:0;border-left:10px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent}
-.playBtn.hide{display:none}
-
+.vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+.playBtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;border:none;border-radius:999px;
+         background:#111;color:#fff;padding:14px 20px;font-weight:800;font-size:18px;
+         box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;display:none}
+.playBtn.show{display:block}
 /* ascii */
 .p2wrap{position:relative;width:100%;height:100%;background:#111;border-radius:16px;display:grid;place-items:center}
 .p2wrap video{width:100%;height:100%;object-fit:contain;background:transparent}
-
 /* grid 4 */
 .grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;width:100%;height:100%}
 .badge{display:grid;place-items:center;border:1px solid #f0e6c6;border-radius:16px;background:#fffdf3;text-decoration:none;color:inherit;min-height:180px}
 .badge img{width:min(42vw,200px);height:min(42vw,200px);object-fit:contain}
-
 /* nav */
 .nav{display:flex;gap:10px;justify-content:flex-end;padding:10px}
-button.btn{appearance:none;border:none;padding:.8rem 1.1rem;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+button.btn{appearance:none;border:none;padding:.85rem 1.15rem;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.12)}
 button.btn.alt{background:var(--gold);color:#3b2a00}
-button.btn[disabled]{opacity:.5;pointer-events:none}
-
+#btnPrev{display:none} /* 需求不需要上一頁 */
 /* popups */
 .layer{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:50}
 .layer:target{display:grid}
 .layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6;box-shadow:0 16px 44px rgba(0,0,0,.28)}
 .layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
 .layer .bgclose{position:absolute;inset:0;content:"";display:block}
-
 /* finale overlay */
 .final-msg{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,255,255,.0)}
 .final-msg .inner{text-align:center}
 .final-msg .jp{font-weight:900;letter-spacing:.04em;font-size:clamp(28px,5vw,72px)}
 .final-msg .jp small{display:block; font-size:.45em; opacity:.75; margin-top:.2em}
 .final-msg .btns{margin-top:16px;display:flex;gap:10px;justify-content:center}
+/* share */
 .shareLayer{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45);z-index:60}
 .shareLayer.show{display:grid}
 .shareCard{background:#fff;padding:20px;border-radius:16px;width:min(92vw,420px);box-shadow:0 16px 44px rgba(0,0,0,.33);text-align:center}
@@ -74,17 +68,17 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
       <!-- p1 -->
       <section class="page active" id="p1">
         <div class="vbox">
-          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted poster="poster.png">
-            <source id="sIntro" src="envelope_open_fixed.mp4" type="video/mp4">
+          <video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png">
+            <source id="sIntro" src="envelope_open.mp4" type="video/mp4">
           </video>
-          <button class="playBtn" id="playIntro"><span class="tri"></span>播放</button>
+          <button class="playBtn" id="p1Play">▶︎ 播放</button>
         </div>
       </section>
       <!-- p2 -->
       <section class="page" id="p2">
         <div class="p2wrap" id="p2wrap">
-          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop>
-            <source id="sAscii" src="ascii_anim_fixed.mp4" type="video/mp4">
+          <video id="vAscii" playsinline webkit-playsinline muted preload="auto" loop>
+            <source id="sAscii" src="ascii_anim.mp4" type="video/mp4">
           </video>
         </div>
       </section>
@@ -100,8 +94,8 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
       <!-- p4 -->
       <section class="page" id="p4">
         <div class="vbox">
-          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted>
-            <source id="sFinale" src="finale_fixed.mp4" type="video/mp4">
+          <video id="vFinale" playsinline webkit-playsinline muted preload="auto">
+            <source id="sFinale" src="finale.mp4" type="video/mp4">
           </video>
           <div class="final-msg" id="finalMsg">
             <div class="inner">
@@ -116,8 +110,7 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
       </section>
     </div>
     <div class="nav">
-      <button class="btn" id="btnPrev" disabled>上一頁</button>
-      <button class="btn alt" id="btnNext" disabled>下一頁</button>
+      <button class="btn alt" id="btnNext" style="display:none">下一頁</button>
     </div>
   </div>
 </div>
@@ -143,86 +136,90 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
 
 <script>
 (function(){
-  // ---- cache-bust helper (避免 CDN 舊檔) ----
+  // 破快取一次（避免 CDN 舊檔）
   const VER = Date.now().toString(36);
   const bust = (u)=> u + (u.includes('?') ? '&' : '?') + 'v=' + VER;
 
-  // ---- page switching ----
   const pages=[...document.querySelectorAll('.page')];
   let idx=0;
-  const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
+  const next=document.getElementById('btnNext');
+
   function show(i){
     pages[idx].classList.remove('active');
     idx=Math.max(0,Math.min(pages.length-1,i));
     pages[idx].classList.add('active');
-    prev.disabled = (idx===0);
     next.textContent=(idx===pages.length-1)?'完成':'下一頁';
-    if(idx===0 && !introEnded){ next.disabled=true; } else { next.disabled=false; }
 
-    if(idx===1){ // p2 ascii
-      ensurePlay(vAscii).then(()=> setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 80));
+    if(idx===1){ // p2: 啟播 + 取背景色
+      ensurePlay(vAscii);
+      setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 80);
     }
-    if(idx===3){ // p4 finale
+    if(idx===3){ // p4: 直接播放
       ensurePlay(vFinale);
     }
   }
-  prev.onclick=()=>show(idx-1);
-  next.onclick=()=>{ if(idx===pages.length-1){ return; } show(idx+1); };
-  pages[0].classList.add('active');
 
-  // ---- videos & helpers ----
+  // 元素
   const vIntro=document.getElementById('vIntro');
-  const sIntro=document.getElementById('sIntro');
-  const playIntro=document.getElementById('playIntro');
   const vAscii=document.getElementById('vAscii');
-  const sAscii=document.getElementById('sAscii');
   const vFinale=document.getElementById('vFinale');
-  const sFinale=document.getElementById('sFinale');
   const p2wrap=document.getElementById('p2wrap');
-
-  // bust sources on load
-  [sIntro,sAscii,sFinale].forEach(s=> s.setAttribute('src', bust(s.getAttribute('src'))));
+  const p1Play=document.getElementById('p1Play');
+  // bust src
+  ['sIntro','sAscii','sFinale'].forEach(id=>{
+    const s=document.getElementById(id);
+    s && s.setAttribute('src', bust(s.getAttribute('src')));
+  });
   vIntro.setAttribute('poster', bust('poster.png'));
   vIntro.load(); vAscii.load(); vFinale.load();
 
-  function playWithBtn(video, btn){
-    video.play().then(()=>{ btn.classList.add('hide'); }).catch(()=>{ video.controls=true; /* show native controls */ });
+  // Step 1: 進站自動播放（若被擋，顯示中央播放鈕）
+  function autoStart(){
+    vIntro.play().then(()=>{
+      p1Play.classList.remove('show');
+    }).catch(()=>{
+      p1Play.classList.add('show'); // 使用者可點此播放
+    });
   }
-  function ensurePlay(video){
-    return video.play().catch(()=>{ video.controls=true; return Promise.resolve(false); });
-  }
-  async function sampleBg(video){
-    try{
-      if(!video.videoWidth) return null;
-      const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth));
-      const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
-      c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h);
-      const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
-      for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
-      r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
-      return `rgb(${r},${g},${b})`;
-    }catch(e){ return null; }
-  }
+  document.addEventListener('DOMContentLoaded', autoStart, {once:true});
+  p1Play.addEventListener('click', ()=>{
+    vIntro.play().then(()=> p1Play.classList.remove('show'));
+  });
+  vIntro.addEventListener('click', ()=>{
+    if(vIntro.paused) vIntro.play().then(()=> p1Play.classList.remove('show'));
+  });
 
-  // p1 behavior
-  let introEnded=false;
-  playIntro.addEventListener('click', ()=> playWithBtn(vIntro, playIntro));
-  vIntro.addEventListener('click', ()=> playWithBtn(vIntro, playIntro));
-  vIntro.addEventListener('pause', ()=>{ if(!vIntro.ended) playIntro.classList.remove('hide'); });
-  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; });
+  // Step 2: 播放完才顯示「下一頁」
+  vIntro.addEventListener('ended', ()=>{
+    next.style.display='inline-block';
+  });
 
-  // p4 finale end
+  // 下一頁行為
+  next.addEventListener('click', ()=>{
+    if(idx===pages.length-1){ return; }
+    show(idx+1);
+    // 若從 p3 → p4，先把「完成」藏起來直到 finale 播完
+    if(idx===3){ next.style.display='none'; }
+  });
+
+  // Finale 結束顯示感謝 + 再次/分享
   const finalMsg=document.getElementById('finalMsg');
-  vFinale.addEventListener('ended', ()=>{ finalMsg.style.display='grid'; });
+  vFinale.addEventListener('ended', ()=>{
+    finalMsg.style.display='grid';
+    next.style.display='inline-block'; // 顯示「完成」字樣（可再點回到頭或僅保留在頁面）
+    next.textContent='完成';
+  });
 
-  // replay
+  // 再一次：回到 p1 並重播
   document.getElementById('btnReplay').onclick=()=>{
     finalMsg.style.display='none';
     [vFinale,vAscii,vIntro].forEach(v=>{ try{v.pause(); v.currentTime=0;}catch(e){} });
-    playIntro.classList.remove('hide'); introEnded=false; show(0);
+    next.style.display='none';
+    show(0);
+    autoStart();
   };
 
-  // share
+  // 分享：顯示 QR + 複製網址
   const shareLayer=document.getElementById('shareLayer');
   document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
   document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
@@ -237,7 +234,24 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
     else { box.textContent = location.href.split('#')[0]; }
   }
 
-  // images loader with ext fallback + cache bust
+  // helpers
+  function ensurePlay(video){
+    video.play().catch(()=>{ video.controls=true; }); // 被擋就出現原生控制播放
+  }
+  async function sampleBg(video){
+    try{
+      if(!video.videoWidth) return null;
+      const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth));
+      const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
+      c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h);
+      const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
+      for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
+      r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+      return `rgb(${r},${g},${b})`;
+    }catch(e){ return null; }
+  }
+
+  // lazy load 4圖（副檔名自動嘗試 + 破快取）
   const exts=['png','jpg','jpeg','webp','svg'];
   function loadImg(id,bases){ const el=document.getElementById(id);
     (function tryNextBase(bi){ if(bi>=bases.length){ el.alt=''; return; }
