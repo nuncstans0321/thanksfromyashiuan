@@ -1,157 +1,92 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.3.4</title>
+<title>感謝卡 — v9.3</title>
 <style>
-:root{--r:22px;--card:#f2f3f5;--ink:#1f2328}
+:root{--r:22px;--bg:#0e0e10;--card:#f2f3f5;--ink:#1f2328}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:#0e0e10;color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.stage{width:min(980px,96vw);height:min(780px,96svh)}@supports not (height:1svh){.stage{height:min(780px,96vh)}}
+.stage{width:min(980px,96vw);height:min(700px,94svh)}@supports not (height:1svh){.stage{height:min(700px,94vh)}}
 .card{position:relative;width:100%;height:100%;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:0 28px 60px rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.12),inset 0 0 0 1px rgba(0,0,0,.08)}
 .page{position:absolute;inset:0;padding:20px;display:grid;place-items:center;opacity:0;transform:translateY(8px);transition:.3s}
 .page.active{opacity:1;transform:none}
 #p1,#p2,#p4{padding:0}
-#p3{display:block;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px}
 .vbox{position:relative;width:100%;height:100%;background:#000;border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center}
 .vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-.next{position:fixed;right:calc(2vw + 8px);bottom:calc(2vh + 8px);padding:.7rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;z-index:50;display:none}
+.next{position:absolute;right:12px;bottom:12px;padding:.6rem 1rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:700;display:none}
 .next.show{display:inline-block}
-.gridArea{max-width:1024px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-.banner{text-align:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:10px;font-weight:900}
-.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px}
+.p2ribbon{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f2c94c;border-radius:12px;padding:6px 10px;font-weight:800;z-index:2}
+.gridArea{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:16px}
+.banner{text-align:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:8px;font-weight:900}
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:12px;flex:1}
 @media (max-width:560px){.grid4{grid-template-columns:1fr}}
-.badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:10px;position:relative;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06)}
-.badge img{width:100%;display:block;border-radius:10px}
-.meta{display:none;margin-top:8px;font-size:14px;color:#444}
-.meta h4{margin:.2rem 0 .35rem 0;font-size:18px;line-height:1.35}
-.meta p{margin:0;line-height:1.6}
-.badge.show .meta{display:block}
-.pbar{display:none;height:10px;border:1px solid #2f3a5d;background:#0f1220;border-radius:999px;overflow:hidden;margin-top:6px}
+.badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:10px;position:relative;cursor:pointer}
+.badge img{width:100%;display:block;border-radius:10px;margin-bottom:8px}
+.badge h4{margin:0 0 6px 0;font-size:18px;line-height:1.35}
+.badge p{margin:0 0 8px 0;font-size:14px;color:#555}
+.mark{position:absolute;top:6px;right:6px;font-size:12px;border:1px dashed #0004;border-radius:999px;padding:2px 6px;background:#fff}
+.pbar{display:none;height:10px;border:1px solid #2f3a5d;background:#0f1220;border-radius:999px;overflow:hidden}
 .pbar .fill{width:0;height:100%;background:linear-gradient(90deg,#5146ff,#ffd54a);transition:width 1.1s}
-.fullTag{display:none;position:absolute;top:10px;left:10px;background:#2a233f;color:#fff;font-size:12px;padding:3px 8px;border-radius:999px}
-.face{position:absolute;left:10px;bottom:10px;font-size:42px}
-.stamp{position:absolute;bottom:10px;right:10px;border:2px dashed #7ec3ff;color:#7ec3ff;font-weight:800;border-radius:8px;padding:4px 8px;opacity:0;transform:scale(.9);transition:.3s}
+.fullTag{display:none;position:absolute;top:8px;left:8px;background:#2a233f;color:#fff;font-size:12px;padding:3px 6px;border-radius:999px}
+.stamp{position:absolute;bottom:8px;right:8px;border:2px dashed #7ec3ff;color:#7ec3ff;font-weight:800;border-radius:8px;padding:4px 8px;opacity:0;transform:scale(.9);transition:.3s}
+.face{font-size:42px}
 .shield{position:absolute;right:10px;bottom:10px;background:#24352a;color:#bff5cf;border:1px solid #3e6b4f;border-radius:10px;padding:6px 10px;opacity:0;transform:translateY(6px);transition:.3s}
-.box{width:120px;height:78px;background:linear-gradient(180deg,#7a1f19,#6a1712);border:2px solid #a93b2f;border-radius:10px;position:absolute;left:10px;bottom:10px}
+.box{width:120px;height:78px;background:linear-gradient(180deg,#7a1f19,#6a1712);border:2px solid #a93b2f;border-radius:10px;position:relative;margin-top:8px}
 .lid{position:absolute;width:130px;height:22px;background:linear-gradient(180deg,#c44a3c,#a83e33);border:2px solid #a93b2f;border-bottom:none;border-radius:12px 12px 6px 6px;top:-20px;left:-5px;transform-origin:left center;transition:.35s}
 .ribbonY{position:absolute;width:12px;height:100%;left:50%;top:0;transform:translateX(-50%);background:linear-gradient(180deg,#ffd54a,#f9b84a)}
 .burst{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-size:28px;opacity:0;transition:.35s}
 .note{position:absolute;left:50%;top:-50px;transform:translateX(-50%);background:#fff;color:#333;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;transition:.25s}
 .open .lid{transform:rotate(-22deg) translateY(-6px)}.open .burst{opacity:1;transform:translateX(-50%) translateY(-6px)}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1e2433;border:1px solid #334063;color:#e8ebff;padding:8px 12px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:60}
+.final-msg{position:absolute;inset:0;display:none;place-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.35),rgba(0,0,0,.15))}
+.final-msg .jp{color:#fff;font-weight:900;font-size:clamp(24px,8.2vw,56px);text-shadow:0 2px 12px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9),0 0 14px rgba(0,0,0,.8)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1e2433;border:1px solid #334063;color:#e8ebff;padding:8px 12px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
-.spark{position:fixed;font-size:18px;animation:rise .65s ease-out forwards;pointer-events:none;z-index:60}
-@keyframes rise{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-26px) scale(1.2);opacity:0}}
 </style>
 </head><body>
 <div class="stage"><div class="card">
   <section class="page active" id="p1">
-    <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video></div>
-    <button class="next" id="n1">下一頁</button>
+    <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video><button class="next" id="n1">下一頁</button></div>
   </section>
   <section class="page" id="p2">
-    <div class="vbox"><div class="p2ribbon" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f2c94c;border-radius:12px;padding:6px 10px;font-weight:800;z-index:2">給博皓學長 ～ by 62期學員亞璇</div><video id="vAscii" playsinline webkit-playsinline muted preload="auto"><source id="sAscii" src="ascii_anim.mp4" type="video/mp4"></video></div>
+    <div class="vbox"><div class="p2ribbon">給博皓學長 ～ by 62期學員亞璇</div><video id="vAscii" playsinline webkit-playsinline muted preload="auto" loop><source id="sAscii" src="ascii_anim.mp4" type="video/mp4"></video></div>
     <button class="next" id="n2">下一頁</button>
   </section>
   <section class="page" id="p3">
     <div class="gridArea">
       <div class="banner">亞璇的祝福派送中，任選一份今日 Buff，點一下領取 ✨</div>
       <div class="grid4">
-        <div class="badge" id="b1" role="button" tabindex="0" aria-label="能量瓶"><img src="slot1.png" alt="能量瓶">
-          <div class="meta"><h4>今天電量不足？充電站啟動 ⚡️</h4><p>輕點一下，幫你回充精神與好心情。</p></div>
-          <div class="fullTag" id="full">滿格！</div>
-          <div class="pbar"><div class="fill" id="fill"></div></div>
-        </div>
-        <div class="badge" id="b2" role="button" tabindex="0" aria-label="好天氣"><img src="slot2.png" alt="好天氣">
-          <div class="meta"><h4>天氣系統連線中…今日晴朗指數提升，心情放晴！ 🌈</h4><p>不論晴雨，願你處處順心。</p></div>
-          <div class="face" id="wface">🌥️</div>
-          <div class="stamp" id="wstamp">+1 順利</div>
-        </div>
-        <div class="badge" id="b3" role="button" tabindex="0" aria-label="花束"><img src="slot3.png" alt="花束">
-          <div class="meta"><h4>送你一束今日的好運 💐</h4><p>把好運綁成一束，突發狀況防護罩 ON 🍀。</p></div>
-          <div class="face" id="qface">✨</div>
-          <div class="shield" id="qshield">🍀 抵禦突發</div>
-        </div>
-        <div class="badge" id="b4" role="button" tabindex="0" aria-label="感謝禮物"><img src="slot4.png" alt="禮物">
-          <div class="meta"><h4>這份小禮物，裝著萬分感謝 ✨❤️</h4><p>謝謝你，願好事不斷發生。</p></div>
-          <div class="box" id="gbox"><div class="lid"></div><div class="ribbonY"></div><div class="burst">✨💖✨</div><div class="note" id="gnote">博皓學長，謝謝你！</div></div>
-        </div>
+        <a class="badge" id="b1"><span class="mark">電黃 ⚡️</span><h4>今天電量不足？充電站啟動 ⚡️</h4><p>輕點一下，幫你回充精神與好心情。</p><img src="slot1.png" alt="能量瓶"><div class="fullTag" id="full">滿格！</div><div class="pbar"><div class="fill" id="fill"></div></div></a>
+        <a class="badge" id="b2"><span class="mark">天藍 ☀️</span><h4>天氣系統連線中…今日晴朗指數提升，心情放晴！ 🌈</h4><p>不論晴雨，願你處處順心。</p><img src="slot2.png" alt="好天氣"><div class="face" id="wface">🌥️</div><div class="stamp" id="wstamp">+1 順利</div></a>
+        <a class="badge" id="b3"><span class="mark">粉紅＋綠 💐</span><h4>送你一束今日的好運 💐</h4><p>把好運綁成一束，突發狀況防護罩 ON 🍀。</p><img src="slot3.png" alt="花束"><div class="face" id="qface">✨</div><div class="shield" id="qshield">🍀 抵禦突發</div></a>
+        <a class="badge" id="b4"><span class="mark">金＋暖紅 🎁</span><h4>這份小禮物，裝著萬分感謝 ✨❤️</h4><p>謝謝你，願好事不斷發生。</p><img src="slot4.png" alt="禮物"><div class="box" id="gbox"><div class="lid"></div><div class="ribbonY"></div><div class="burst">✨💖✨</div><div class="note" id="gnote">博皓學長，謝謝你！</div></div></a>
       </div>
     </div>
     <button class="next" id="n3">下一頁</button>
   </section>
   <section class="page" id="p4">
-    <div class="vbox" id="finalBox"><video id="vFinale" playsinline webkit-playsinline muted preload="auto"><source id="sFinale" src="finale.mp4" type="video/mp4"></video><div class="final-msg" id="fmsg" style="position:absolute;inset:0;display:none;place-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.35),rgba(0,0,0,.15))"><div class="jp" style="color:#fff;font-weight:900;font-size:clamp(24px,8.2vw,56px);text-shadow:0 2px 12px rgba(0,0,0,.75),0 0 2px rgba(0,0,0,.9),0 0 14px rgba(0,0,0,.8)">ありがとうございます</div></div></div>
+    <div class="vbox" id="finalBox"><video id="vFinale" playsinline webkit-playsinline muted preload="auto"><source id="sFinale" src="finale.mp4" type="video/mp4"></video><div class="final-msg" id="fmsg"><div class="jp">ありがとうございます</div></div></div>
   </section>
 </div></div>
 <div class="toast" id="toast"></div>
 <script>
 (function(){
-  const $=s=>document.querySelector(s), t=$("#toast");
-  const bust=Date.now().toString(36);
-  ["#sIntro","#sAscii","#sFinale"].forEach(sel=>{const el=$(sel); if(el){el.src=el.getAttribute("src")+"?v="+bust;}});
-  document.querySelectorAll("img").forEach(img=>{const src=img.getAttribute("src"); if(src) img.setAttribute("src", src+(src.includes("?")?"&":"?")+"v="+bust)});
+  const $=s=>document.querySelector(s),t=$("#toast");
+  const cb=Date.now().toString(36);["#sIntro","#sAscii","#sFinale"].forEach(sel=>{const el=$(sel);if(el){el.src=el.getAttribute("src")+"?v="+cb;}});
+  const pages=[...document.querySelectorAll(".page")];let i=0;const show=n=>{pages[i].classList.remove("active");i=Math.max(0,Math.min(pages.length-1,n));pages[i].classList.add("active");};
+  const n1=$("#n1"),n2=$("#n2"),n3=$("#n3");const v1=$("#vIntro"),v2=$("#vAscii"),v3=$("#vFinale");
+  v1.addEventListener("ended",()=>{n1.classList.add("show")});n1.onclick=()=>show(1);n2.onclick=()=>show(2);n3.onclick=()=>show(3);
+  v1.play().catch(()=>{n1.classList.add("show")});
+  const ensure=v=>v.play().catch(()=>{v.controls=true});pages[1].addEventListener("transitionend",()=>ensure(v2),{once:true});pages[3].addEventListener("transitionend",()=>ensure(v3),{once:true});
+  v3.addEventListener("ended",()=>{$("#fmsg").style.display="grid"});
 
-  const pages=[...document.querySelectorAll(".page")]; let idx=0;
-  const show=n=>{pages[idx].classList.remove("active");idx=Math.max(0,Math.min(pages.length-1,n));pages[idx].classList.add("active");};
-  const n1=$("#n1"), n2=$("#n2"), n3=$("#n3");
-  const v1=$("#vIntro"), v2=$("#vAscii"), v3=$("#vFinale");
-
-  // p1：影片播完才顯示
-  const reveal1=()=>n1.classList.add("show");
-  v1.play().catch(()=>{ v1.setAttribute("controls",""); });
-  v1.addEventListener("ended", reveal1);
-  n1.addEventListener("click", ()=>{ show(1); v2.play().catch(()=>{ v2.setAttribute("controls",""); }); });
-
-  // p2：不 loop，播完才顯示
-  const reveal2=()=>n2.classList.add("show");
-  v2.addEventListener("ended", reveal2);
-  n2.addEventListener("click", ()=>{ show(2); });
-
-  // p3 → p4
-  n3.addEventListener("click", ()=>{ show(3); v3.play().catch(()=>{ v3.setAttribute("controls",""); }); });
-  v3.addEventListener("ended", ()=>{ $("#fmsg").style.display="grid"; });
-
-  // Sparks小動畫
-  const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
-
-  const showMetaOnce = (b)=>{ if(!b.classList.contains("show")) b.classList.add("show"); };
-
-  const on = (el, fn)=>{
-    ["click","touchstart","keydown"].forEach(evt=>{
-      el.addEventListener(evt, (e)=>{
-        if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return;
-        e.preventDefault(); fn(e);
-      }, {passive:false});
-    });
-  };
-
+  const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}}
   // A 充電
-  (function(){const b=$("#b1"),fill=$("#fill"),full=$("#full");let clicks=0,lock=false;
-    on(b, ()=>{
-      showMetaOnce(b);
-      if(lock) return; lock=true;
-      const bar=b.querySelector(".pbar"); bar.style.display="block";
-      b.querySelector("img").style.filter="brightness(1.1) drop-shadow(0 0 8px rgba(255,213,74,.5))";
-      requestAnimationFrame(()=> fill.style.width="100%");
-      setTimeout(()=>{ fill.style.width="0"; bar.style.display="none"; b.querySelector('img').style.filter=""; lock=false; }, 1100);
-      clicks++; if(clicks%3===0){ full.style.display="inline-block"; burst(b,12); t.textContent="已補滿，出發吧！"; t.classList.add("show"); setTimeout(()=>{ t.classList.remove("show"); full.style.display="none"; }, 1000); }
-    });
-  })();
-
+  (function(){const b=$("#b1"),fill=$("#fill"),full=$("#full");let c=0,lock=false;b.addEventListener("click",()=>{if(lock)return;lock=true;const bar=b.querySelector(".pbar");bar.style.display="block";requestAnimationFrame(()=>fill.style.width="100%");setTimeout(()=>{fill.style.width="0";bar.style.display="none";lock=false;},1100);c++;if(c%3===0){full.style.display="inline-block";burst(b,12);t.textContent="已補滿，出發吧！";t.classList.add("show");setTimeout(()=>{t.classList.remove("show");full.style.display="none"},1000);}})})();
   // B 天氣
-  (function(){const b=$("#b2"),face=$("#wface"),stamp=$("#wstamp");const S=["🌥️","☀️","🌈"];let i=0;
-    on(b, ()=>{ showMetaOnce(b); i=(i+1)%S.length; face.textContent=S[i]; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 850); if(S[i]==="🌈") burst(b,12); });
-  })();
-
+  (function(){const b=$("#b2"),face=$("#wface"),stamp=$("#wstamp");const s=["🌥️","☀️","🌈"];let k=0;b.addEventListener("click",()=>{k=(k+1)%s.length;face.textContent=s[k];stamp.style.opacity=1;stamp.style.transform="scale(1)";setTimeout(()=>{stamp.style.opacity=0;stamp.style.transform="scale(.9)"},850);if(s[k]==="🌈")burst(b,12)})})();
   // C 花束
-  (function(){const b=$("#b3"),face=$("#qface"),shield=$("#qshield");const V=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}];let k=-1,c=0;
-    on(b, ()=>{ showMetaOnce(b); c++; if(c%3===0){ k=(k+1)%V.length; face.textContent=V[k].e; shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(b,10); t.textContent="花束升級："+V[k].l; t.classList.add("show"); setTimeout(()=>{ t.classList.remove("show"); shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 900); } });
-  })();
-
+  (function(){const b=$("#b3"),face=$("#qface"),shield=$("#qshield");const v=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}];let click=0,idx=-1;b.addEventListener("click",()=>{click++;if(click%3===0){idx=(idx+1)%v.length;face.textContent=v[idx].e;shield.style.opacity=1;shield.style.transform="translateY(0)";t.textContent="花束升級："+v[idx].l;t.classList.add("show");burst(b,10);setTimeout(()=>{t.classList.remove("show");shield.style.opacity=0;shield.style.transform="translateY(6px)"},900)}})})();
   // D 禮物
-  (function(){const b=$("#b4"),box=$("#gbox"),note=$("#gnote");let opened=false, noteOnce=false;
-    on(b, ()=>{ showMetaOnce(b); if(!opened){ opened=true; box.classList.add("open"); burst(b,14); } else { opened=false; box.classList.remove("open"); if(!noteOnce){ noteOnce=true; note.style.opacity=1; note.style.top="-64px"; setTimeout(()=>{ note.style.opacity=0; note.style.top="-50px"; }, 600); } } });
-  })();
+  (function(){const b=$("#b4"),box=$("#gbox"),note=$("#gnote");let opened=false,showed=false;b.addEventListener("click",()=>{opened=!opened;box.classList.toggle("open",opened);if(opened){burst(b,14)}else if(!showed){showed=true;note.style.opacity=1;note.style.top="-64px";setTimeout(()=>{note.style.opacity=0;note.style.top="-50px"},600)}})})();
 })();
 </script>
 </body></html>
