@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>感謝卡 — 無黑框版（行動優化）</title>
+<title>感謝卡 — 防黑框檢測版</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 <style>
@@ -29,7 +29,9 @@ body{margin:0;background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--b
   clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;border-top-left-radius:14px;border-top-right-radius:14px;transition:transform .7s cubic-bezier(.2,.9,.2,1.2)}
 .hint{position:absolute;right:8px;bottom:8px;background:#111;color:#fff;padding:.6rem 1rem;border-radius:12px;font-weight:800;letter-spacing:.3px;box-shadow:0 8px 20px rgba(0,0,0,.2);user-select:none}
 .clickmask{position:absolute;inset:0;cursor:pointer;outline:none;border-radius:18px}
-.ready{position:absolute;left:10px;bottom:10px;font-size:12px;color:#888}
+/* 盾牌：覆蓋影片直到偵測到非黑畫面 */
+.shield{position:absolute;inset:0;border-radius:18px;background:#fff;display:grid;place-items:center;opacity:1;transition:opacity .35s ease}
+.shield.hide{opacity:0;pointer-events:none}
 
 /* ---------- Card ---------- */
 .card{position:absolute;inset:0;display:grid;place-items:center;opacity:0;pointer-events:none;transform:translateY(10px) scale(.98);transition:opacity .7s,transform .7s;}
@@ -79,13 +81,17 @@ button.ghost{background:var(--gold);color:#3b2a00}
   <!-- Intro -->
   <section class="intro" id="intro">
     <div id="envArea">
-      <div id="envCustom"><div class="holder"></div></div>
+      <div id="envCustom">
+        <div class="holder"></div>
+        <div class="shield" id="introShield">
+          <div class="envelope"><div class="env-body"></div><div class="env-flap"></div></div>
+        </div>
+      </div>
       <div id="envDefault">
         <div class="envelope"><div class="env-body"></div><div class="env-flap"></div></div>
       </div>
       <div class="hint">點信封動畫</div>
       <button class="clickmask" id="startBtn" aria-label="點擊開始播放動畫"></button>
-      <div class="ready" id="readyTip" hidden>動畫已就緒</div>
     </div>
   </section>
 
@@ -157,19 +163,46 @@ button.ghost{background:var(--gold);color:#3b2a00}
   async function fetchTextOrNull(url){
     try{ const r = await fetch(url,{cache:'no-store'}); if(!r.ok) return null; return await r.text(); }catch(e){ return null; }
   }
+  function waitEvent(target, ev, timeout){
+    return new Promise((res,rej)=>{
+      const to = timeout? setTimeout(()=>{cleanup(); rej(new Error('timeout'))}, timeout):null;
+      const fn = ()=>{ cleanup(); res(); };
+      function cleanup(){ target.removeEventListener(ev,fn); if(to) clearTimeout(to); }
+      target.addEventListener(ev,fn,{once:true});
+    });
+  }
+  function frameNotBlack(video){
+    try{
+      if(!video.videoWidth || !video.videoHeight) return false;
+      const w = 64, h = Math.max(1, Math.round(64*video.videoHeight/video.videoWidth));
+      const c = frameNotBlack._c || (frameNotBlack._c=document.createElement('canvas'));
+      const ctx = c.getContext('2d',{willReadFrequently:true});
+      c.width=w; c.height=h;
+      ctx.drawImage(video,0,0,w,h);
+      const d = ctx.getImageData(0,0,w,h).data;
+      // 計算亮度平均（Y=0.2126R+0.7152G+0.0722B）
+      let sum=0, N=w*h;
+      for(let i=0;i<d.length;i+=4){
+        const y=0.2126*d[i]+0.7152*d[i+1]+0.0722*d[i+2];
+        sum+=y;
+      }
+      const avg = sum/N;
+      return avg > 8; // >8 很暗, 視為黑畫面
+    }catch(e){ return false; }
+  }
 
-  /* ---------- Intro: prepare custom animation but DON'T show until ready ---------- */
+  /* ---------- Intro with shield + non-black detection ---------- */
   const intro = document.getElementById('intro');
   const envCustom = document.getElementById('envCustom');
   const envDefault = document.getElementById('envDefault');
   const holder = envCustom.querySelector('.holder');
-  const flap = envDefault.querySelector('.env-flap');
+  const shield = document.getElementById('introShield');
+  const flapDefault = envDefault.querySelector('.env-flap');
   const startBtn = document.getElementById('startBtn');
-  const readyTip = document.getElementById('readyTip');
 
-  let introPlay = null; // function -> Promise
+  let introPlay = null;
   (async function prepareIntro(){
-    // Try Lottie JSON
+    // Lottie
     try{
       const jr = await fetch('envelope_open.json',{cache:'no-store'});
       if(jr.ok){
@@ -177,58 +210,57 @@ button.ghost{background:var(--gold);color:#3b2a00}
         const box = document.createElement('div'); box.style.cssText='position:absolute;inset:0';
         holder.appendChild(box);
         const anim = lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:false,animationData:data});
-        readyTip.hidden=false;
         introPlay = ()=> new Promise(resolve=>{
           envDefault.style.display='none'; envCustom.style.display='block';
-          anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete', resolve); setTimeout(resolve, 8000);
+          shield.classList.remove('hide'); anim.goToAndStop(0,true); anim.play();
+          setTimeout(()=>shield.classList.add('hide'), 350);
+          anim.addEventListener('complete', resolve); setTimeout(resolve, 9000);
         });
         return;
       }
     }catch(e){}
 
-    // Try Video mp4/webm: preload first frame; only swap when ready
+    // Video
     const vCands=['envelope_open.mp4','envelope_open.webm'];
     for(const src of vCands){
       if(await canPlayVideo(src)){
         const v=document.createElement('video');
         v.src=src; v.playsInline=true; v.setAttribute('playsinline',''); v.muted=true; v.controls=false; v.autoplay=false; v.preload='auto';
         v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent';
-        let isReady=false;
-        v.addEventListener('loadeddata',()=>{ isReady=true; readyTip.hidden=false; });
-        v.addEventListener('canplay',()=>{ isReady=true; readyTip.hidden=false; });
         holder.appendChild(v);
         introPlay = async ()=>{
-          if(!isReady){ // 若還沒就緒，直接走 CSS 信封避免黑框
-            flap.style.transform='rotateX(175deg)'; await sleep(650); return;
-          }
-          envDefault.style.display='none'; envCustom.style.display='block';
-          v.currentTime=0; const p=v.play(); if(p) p.catch(()=>{});
-          await new Promise(res=>{ v.onended=res; setTimeout(res, 12000); });
+          envDefault.style.display='none'; envCustom.style.display='block'; shield.classList.remove('hide');
+          v.currentTime=0.03;
+          try { await v.play(); } catch(e) {}
+          // 等 playing + 第一個非黑畫面
+          await waitEvent(v,'playing',1500).catch(()=>{});
+          let tries=0; while(tries++<30){ if(frameNotBlack(v)) break; await new Promise(r=>requestAnimationFrame(r)); }
+          shield.classList.add('hide');
+          await waitEvent(v,'ended',15000).catch(()=>{});
         };
         return;
       }
     }
 
-    // Try animated image
+    // Animated image
     const iCands=['envelope_open.gif','envelope_open.apng','envelope_open.webp','envelope_open.svg'];
     for(const src of iCands){
       if(await canLoadImage(src)){
         const img=document.createElement('img'); img.src=src; holder.appendChild(img);
-        readyTip.hidden=false;
-        introPlay = async ()=>{ envDefault.style.display='none'; envCustom.style.display='block'; await sleep(3200); };
+        introPlay = async ()=>{ envDefault.style.display='none'; envCustom.style.display='block'; shield.classList.add('hide'); await sleep(3200); };
         return;
       }
     }
 
-    // Fallback only: CSS flap
-    introPlay = async ()=>{ flap.style.transform='rotateX(175deg)'; await sleep(650); };
+    // Fallback：CSS flap
+    introPlay = async ()=>{ flapDefault.style.transform='rotateX(175deg)'; await sleep(650); };
   })();
 
   function canPlayVideo(url){
     return new Promise((resolve)=>{
       const v=document.createElement('video');
-      const mp4OK = !!v.canPlayType && (v.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"') || v.canPlayType('video/mp4'));
-      const webmOK = !!v.canPlayType && (v.canPlayType('video/webm; codecs="vp9,opus"') || v.canPlayType('video/webm'));
+      const mp4OK = !!v.canPlayType && (v.canPlayType('video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\"') || v.canPlayType('video/mp4'));
+      const webmOK = !!v.canPlayType && (v.canPlayType('video/webm; codecs=\"vp9,opus\"') || v.canPlayType('video/webm'));
       if(url.endsWith('.mp4') && !mp4OK){ resolve(false); return; }
       if(url.endsWith('.webm') && !webmOK){ resolve(false); return; }
       v.src=url; v.muted=true; v.playsInline=true;
@@ -246,17 +278,12 @@ button.ghost{background:var(--gold);color:#3b2a00}
     });
   }
 
-  // Click to start intro -> go to card page 1
-  const card = document.getElementById('card');
-  startBtn.addEventListener('click', async ()=>{
-    startBtn.disabled = true;
-    if(introPlay) await introPlay(); else { flap.style.transform='rotateX(175deg)'; await sleep(650); }
+  const card=document.getElementById('card');
+  document.getElementById('startBtn').addEventListener('click', async ()=>{
+    if(introPlay) await introPlay();
     intro.style.opacity='0'; intro.style.transform='translateY(-10px) scale(.98)';
-    await sleep(350);
-    intro.style.display='none';
-    card.classList.add('show');
+    await sleep(350); intro.style.display='none'; card.classList.add('show');
   });
-  startBtn.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') startBtn.click(); });
 
   /* ---------- Pages ---------- */
   const pages=[...document.querySelectorAll('.page')]; let idx=0;
@@ -265,25 +292,22 @@ button.ghost{background:var(--gold);color:#3b2a00}
     next.textContent=(idx===pages.length-1)?'完成':'下一頁'; }
   show(0); prev.onclick=()=>show(idx-1); next.onclick=()=>{ if(idx===pages.length-1) finishFlow(); else show(idx+1); };
 
-  /* ---------- ASCII 區：偵測自備媒體 or 文字幀 ---------- */
+  /* ---------- ASCII 區 ---------- */
   const asciiMedia=document.getElementById('asciiMedia');
   const asciiEl=document.getElementById('ascii'), plate=document.getElementById('asciiPlate'), wrap=document.getElementById('asciiWrap');
 
   (async function detectAscii(){
-    // Lottie
     try{
       const jr = await fetch('ascii_anim.json',{cache:'no-store'});
       if(jr.ok){
         const data = await jr.json();
-        asciiMedia.style.display='flex';
-        asciiEl.parentElement.style.display='none';
+        asciiMedia.style.display='flex'; asciiEl.parentElement.style.display='none';
         const box=document.createElement('div'); box.style.cssText='width:100%;height:100%'; asciiMedia.appendChild(box);
         lottie.loadAnimation({container:box,renderer:'svg',loop:true,autoplay:true,animationData:data});
         return;
       }
     }catch(e){}
 
-    // Video
     const vCands=['ascii_anim.mp4','ascii_anim.webm'];
     for(const src of vCands){
       if(await canPlayVideo(src)){
@@ -292,7 +316,6 @@ button.ghost{background:var(--gold);color:#3b2a00}
         asciiMedia.appendChild(v); return;
       }
     }
-    // Animated image
     const iCands=['ascii_anim.gif','ascii_anim.apng','ascii_anim.webp','ascii_anim.svg'];
     for(const src of iCands){
       if(await canLoadImage(src)){
@@ -300,24 +323,9 @@ button.ghost{background:var(--gold);color:#3b2a00}
         const img=document.createElement('img'); img.src=src; asciiMedia.appendChild(img); return;
       }
     }
-    // Text frames
     const text = await fetchTextOrNull('ascii_frames.txt');
-    if(text){
-      const frames = text.split(/\n\s*===FRAME===\s*\n/gm);
-      playFrames(frames);
-    }else{
-      playFrames([
-`  (\\__/)
-  ( ^_^)  ☆
-  / >⚡`,
-`  (\\__/)
-  ( o_o)   ⚡
-  /  > ⚡`,
-`  (\\__/)
-  ( ^_^)  ☆
-  / >  ⚡`
-      ]);
-    }
+    if(text){ const frames = text.split(/\n\s*===FRAME===\s*\n/gm); playFrames(frames); }
+    else{ playFrames([`(\\__/)\n( ^_^) ☆\n/ >⚡`,`(\\__/)\n( o_o) ⚡\n/  > ⚡`,`(\\__/)\n( ^_^) ☆\n/ >  ⚡`]); }
   })();
 
   function playFrames(frames){let i=0;function step(){asciiEl.textContent=frames[i++%frames.length]; fitAscii();} step(); setInterval(step, 260);}
@@ -325,85 +333,73 @@ button.ghost{background:var(--gold);color:#3b2a00}
     const s = Math.min(rw/Math.max(r.width,1), rh/Math.max(r.height,1), 1); plate.style.transform='scale('+s+')'; }
   addEventListener('resize', fitAscii);
 
-  /* ---------- 四圖：多種名稱支援 ---------- */
+  /* ---------- 四圖 ---------- */
   function loadSlots(){
     const slots=[
       {img:document.getElementById('slot1'), bases:['slot1','pic1','opt1']},
       {img:document.getElementById('slot2'), bases:['slot2','pic2','opt2']},
       {img:document.getElementById('slot3'), bases:['slot3','pic3','opt3']},
       {img:document.getElementById('slot4'), bases:['slot4','pic4','opt4']}
-    ];
-    slots.forEach(s=>tryAnyImage(s.img,s.bases));
-  }
-  loadSlots();
+    ]; slots.forEach(s=>tryAnyImage(s.img,s.bases));
+  } loadSlots();
 
-  /* ---------- Finale：播放自備動畫（若有）→ 直接顆粒『ありがとうございます』 ---------- */
+  /* ---------- Finale（也做非黑偵測） ---------- */
   async function finishFlow(){
-    // 重用 intro 區來播結尾
     card.classList.remove('show');
-    intro.style.display='grid'; intro.style.opacity='1'; intro.style.transform='none';
+    envCustom.style.display='block'; envDefault.style.display='grid';
+    const shield2 = document.getElementById('introShield').cloneNode(true);
+    shield2.id = 'finalShield'; shield2.classList.remove('hide');
+    envCustom.appendChild(shield2);
+    holder.innerHTML='';
 
-    // Prepare finale first; only show when ready to avoid黑框
-    const ok = await playFinalePrepared();
-    await sparkleText('ありがとうございます', 3200);
-  }
+    let play=null;
 
-  async function playFinalePrepared(){
-    // Try to prepare custom finale
-    const ctn = holder; ctn.innerHTML='';
-    let play = null;
-
-    // JSON
     try{
       const jr = await fetch('finale.json',{cache:'no-store'});
       if(jr.ok){
         const data = await jr.json();
         const box = document.createElement('div'); box.style.cssText='position:absolute;inset:0';
-        ctn.appendChild(box);
+        holder.appendChild(box);
         const anim = lottie.loadAnimation({container:box,renderer:'svg',loop:false,autoplay:false,animationData:data});
-        play = ()=> new Promise(res=>{ envDefault.style.display='none'; envCustom.style.display='block'; anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete',res); setTimeout(res,9000); });
+        play = ()=> new Promise(res=>{ envDefault.style.display='none'; setTimeout(()=>shield2.classList.add('hide'), 350); anim.goToAndStop(0,true); anim.play(); anim.addEventListener('complete',res); setTimeout(res,9000); });
       }
     }catch(e){}
 
     if(!play){
-      // Video
       const vCands=['finale.mp4','finale.webm'];
       for(const src of vCands){
         if(await canPlayVideo(src)){
           const v=document.createElement('video'); v.src=src; v.playsInline=true; v.setAttribute('playsinline',''); v.muted=true; v.controls=false; v.autoplay=false; v.preload='auto';
           v.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent';
-          let ready=false; v.addEventListener('loadeddata',()=>{ ready=true; });
-          ctn.appendChild(v);
+          holder.appendChild(v);
           play = async ()=>{
-            if(!ready){ return; } // 直接跳過黑框
-            envDefault.style.display='none'; envCustom.style.display='block';
-            v.currentTime=0; const p=v.play(); if(p) p.catch(()=>{});
-            await new Promise(res=>{ v.onended=res; setTimeout(res,10000); });
+            envDefault.style.display='none'; v.currentTime=0.03;
+            try{ await v.play(); } catch(e){}
+            await waitEvent(v,'playing',1500).catch(()=>{});
+            let tries=0; while(tries++<30){ if(frameNotBlack(v)) break; await new Promise(r=>requestAnimationFrame(r)); }
+            shield2.classList.add('hide');
+            await waitEvent(v,'ended',15000).catch(()=>{});
           };
           break;
         }
       }
     }
-
     if(!play){
-      // Animated image
       const iCands=['finale.gif','finale.apng','finale.webp','finale.svg'];
       for(const src of iCands){
         if(await canLoadImage(src)){
-          const img=document.createElement('img'); img.src=src; ctn.appendChild(img);
-          play = async ()=>{ envDefault.style.display='none'; envCustom.style.display='block'; await sleep(3200); };
+          const img=document.createElement('img'); img.src=src; holder.appendChild(img);
+          play = async ()=>{ envDefault.style.display='none'; shield2.classList.add('hide'); await sleep(3200); };
           break;
         }
       }
     }
 
-    if(play){ await play(); return true; }
-    // 沒有自備動畫就維持 default，不顯示黑框
-    envCustom.style.display='none'; envDefault.style.display='grid';
-    return false;
+    if(play){ try{ await play(); }catch(e){} }
+    await sparkleText('ありがとうございます', 3200);
   }
 
-  /* ---------- Effects canvas：顆粒文字（DPR & 自動縮放） ---------- */
+  /* ---------- Effects canvas（顆粒） ---------- */
   const canvas=document.getElementById('fxCanvas'), ctx=canvas.getContext('2d');
   function resizeCanvas(){ const dpr=window.devicePixelRatio||1; canvas.width=innerWidth*dpr; canvas.height=innerHeight*dpr; canvas.style.width=innerWidth+'px'; canvas.style.height=innerHeight+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); }
   resizeCanvas(); addEventListener('resize', resizeCanvas);
@@ -412,7 +408,6 @@ button.ghost{background:var(--gold);color:#3b2a00}
     return new Promise(resolve=>{
       resizeCanvas(); canvas.style.opacity='1';
       const W=innerWidth, H=innerHeight;
-      // compute font size by measuring width vs height
       const off=document.createElement('canvas'), octx=off.getContext('2d'); off.width=W; off.height=H;
       function fitFont(){
         let fs = Math.min(140, Math.max(60, Math.floor(W*0.18)));
