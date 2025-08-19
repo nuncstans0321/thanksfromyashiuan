@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — Autoplay Flow v5</title>
+<title>感謝卡 — Autoplay Flow v6 (Hybrid Modal)</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -85,13 +85,13 @@ body{
 .final-msg .btns{ margin-top:16px; display:flex; gap:10px; justify-content:center }
 .final-msg .btns .pillBtn{ animation:none }
 
-/* JS Modal for 4-image messages */
-.modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:9999 }
-.modal.show{ display:grid }
-.modal .panel{ background:#fff; color:#222; padding:24px; border-radius:18px; width:min(92vw,720px);
-  text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6;
-  box-shadow:0 22px 60px rgba(0,0,0,.35); border:2px solid var(--gold2) }
-.modal .actions{ margin-top:16px }
+/* CSS fallback layers (for no-JS) */
+.layer{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; place-items:center; z-index:7000 }
+.layer:target{ display:grid }
+.layer .panel{ background:#fff; color:#222; padding:24px; border-radius:18px; width:min(92vw,720px);
+  text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6; border:2px solid var(--gold2);
+  box-shadow:0 22px 60px rgba(0,0,0,.35) }
+.layer .panel a{ display:inline-block; margin-top:16px }
 </style>
 </head>
 <body>
@@ -120,10 +120,10 @@ body{
       <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4" id="grid4">
-          <button class="badge" type="button" data-msg="工作辛苦了，加油 💪✨" tabindex="0"><img id="slot1" alt="能量瓶"></button>
-          <button class="badge" type="button" data-msg="工作一切順利～ 🌈" tabindex="0"><img id="slot2" alt="好天氣"></button>
-          <button class="badge" type="button" data-msg="希望今天沒有突發狀況，是順心好日子！🍀" tabindex="0"><img id="slot3" alt="花束"></button>
-          <button class="badge" type="button" data-msg="呈上真心的萬分感謝 ✨⭐️❤️" tabindex="0"><img id="slot4" alt="禮物"></button>
+          <a class="badge" href="#m1" data-msg="工作辛苦了，加油 💪✨"><img id="slot1" alt="能量瓶"></a>
+          <a class="badge" href="#m2" data-msg="工作一切順利～ 🌈"><img id="slot2" alt="好天氣"></a>
+          <a class="badge" href="#m3" data-msg="希望今天沒有突發狀況，是順心好日子！🍀"><img id="slot3" alt="花束"></a>
+          <a class="badge" href="#m4" data-msg="呈上真心的萬分感謝 ✨⭐️❤️"><img id="slot4" alt="禮物"></a>
         </div>
         <button class="pillBtn nextFab" id="nextFab3"><span class="ico">⚡️</span><span>下一頁</span></button>
       </section>
@@ -148,15 +148,14 @@ body{
   </div>
 </div>
 
-<!-- JS Modal markup -->
-<div class="modal" id="msgModal" role="dialog" aria-modal="true" aria-labelledby="msgText">
-  <div class="panel">
-    <div id="msgText">...</div>
-    <div class="actions">
-      <button class="pillBtn" id="msgClose"><span class="ico">✨</span><span>pika~</span></button>
-    </div>
-  </div>
-</div>
+<!-- CSS fallback popups (no-JS) -->
+<section id="m1" class="layer"><div class="panel">工作辛苦了，加油 💪✨<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
+<section id="m2" class="layer"><div class="panel">工作一切順利～ 🌈<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
+<section id="m3" class="layer"><div class="panel">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
+<section id="m4" class="layer"><div class="panel">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
+
+<!-- JS dynamic modal (progressive enhancement) -->
+<div class="layer" id="dyn" style="z-index:9000"><div class="panel"><div id="dynText"></div><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></div>
 
 <script>
 (function(){
@@ -214,23 +213,24 @@ body{
     introEnded=false; show(0); tryAutoStart();
   };
 
-  // Share modal (lazy build)
+  // Share (lazy)
   let shareLayer=null;
   document.getElementById('btnShare').onclick=()=>{
     if(!shareLayer){
       shareLayer=document.createElement('div');
-      shareLayer.className='modal show';
+      shareLayer.className='layer';
+      shareLayer.style.display='grid';
       shareLayer.innerHTML=`<div class="panel"><h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
         <div id="qr" style="display:grid;place-items:center;margin:10px auto"></div>
-        <div class="actions" style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
           <button class="pillBtn dark" id="copyUrl"><span class="ico">📋</span><span>複製網址</span></button>
           <button class="pillBtn" id="closeShare"><span class="ico">✖</span><span>關閉</span></button>
         </div>
         <div id="copyNote" style="font-size:13px;color:#666;margin-top:6px;text-align:center"></div>
       </div>`;
       document.body.appendChild(shareLayer);
-      shareLayer.addEventListener('click',(e)=>{ if(e.target===shareLayer){ shareLayer.classList.remove('show'); } });
-      shareLayer.querySelector('#closeShare').onclick = ()=> shareLayer.classList.remove('show');
+      shareLayer.addEventListener('click',(e)=>{ if(e.target===shareLayer){ shareLayer.style.display='none'; } });
+      shareLayer.querySelector('#closeShare').onclick = ()=> shareLayer.style.display='none';
       shareLayer.querySelector('#copyUrl').onclick = async ()=>{
         const url=location.href.split('#')[0];
         try{ await navigator.clipboard.writeText(url); shareLayer.querySelector('#copyNote').textContent='已複製網址 ✔'; }
@@ -241,31 +241,24 @@ body{
       }else{
         shareLayer.querySelector('#qr').textContent = location.href.split('#')[0];
       }
-    }else{
-      shareLayer.classList.add('show');
-    }
+    }else{ shareLayer.style.display='grid'; }
   };
 
-  // Robust JS modal for 4 images (event delegation)
-  const modal=document.getElementById('msgModal');
-  const msgText=document.getElementById('msgText');
-  const msgClose=document.getElementById('msgClose');
-  function openMsg(t){ msgText.textContent=t; modal.classList.add('show'); }
-  function closeMsg(){ modal.classList.remove('show'); }
-  msgClose.addEventListener('click', closeMsg);
-  modal.addEventListener('click', (e)=>{ if(e.target===modal) closeMsg(); });
-
+  // Hybrid modal for 4 images: JS enhancement over anchor fallbacks
   const grid=document.getElementById('grid4');
-  function onBadgeEvent(e){
-    const badge = e.target.closest && e.target.closest('.badge');
-    if(!badge) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const t = badge.getAttribute('data-msg') || 'pika~';
-    openMsg(t);
+  const dyn=document.getElementById('dyn');
+  const dynText=document.getElementById('dynText');
+  function onBadge(ev){
+    const a = ev.target.closest && ev.target.closest('a.badge');
+    if(!a) return;
+    // Use JS modal instead of :target
+    ev.preventDefault();
+    dynText.textContent = a.getAttribute('data-msg') || 'pika~';
+    dyn.style.display='grid';
   }
-  grid.addEventListener('click', onBadgeEvent);
-  grid.addEventListener('touchend', onBadgeEvent, {passive:false});
+  grid.addEventListener('click', onBadge);
+  grid.addEventListener('touchend', onBadge, {passive:false});
+  dyn.addEventListener('click', (e)=>{ if(e.target===dyn){ dyn.style.display='none'; } });
 
   function ensurePlay(video){ video.play().catch(()=>{ video.controls=true; }); }
   async function sampleBg(video){
