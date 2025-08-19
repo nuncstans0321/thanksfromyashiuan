@@ -3,98 +3,144 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — Autoplay Flow v7</title>
+<title>感謝卡 — Autoplay Flow v8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
-  --bg:#fff8ec; --paper:#fffef9; --ink:#222;
+  --scene:#0e0e10;          /* 主色，會由影片取樣覆寫 */
+  --scene-soft:#17181c;     /* 次色，稍微變亮 */
+  --paper:#fffef9;
+  --ink:#222;
   --gold1:#ffe79b; --gold2:#ffcf4d; --goldText:#3b2a00;
-  --dark:#151515; --light:#fff;
   --radius:22px;
-  --ascii-bg:#0f1016;
 }
 *{box-sizing:border-box} html,body{height:100%}
 body{
   margin:0;
   font-family: ui-rounded, "Noto Sans TC", system-ui, -apple-system, Segoe UI, Arial;
-  background: radial-gradient(1200px 800px at 20% 20%, #fffaf0, var(--bg));
   color: var(--ink);
+  /* 整體背景會跟著場景色變 */
+  background:
+    radial-gradient(1200px 800px at 20% 20%, color-mix(in lab, var(--scene-soft) 25%, white), var(--scene));
   display:flex; align-items:center; justify-content:center;
   overflow:hidden;
 }
 .stage{ width:min(980px,96vw); height:min(700px,94svh); position:relative; }
 @supports not (height: 1svh){ .stage{height:min(700px,94vh);} }
+
 .card{
-  position:absolute; inset:0; background:var(--paper); border-radius: var(--radius);
-  box-shadow:0 20px 60px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.07);
+  position:absolute; inset:0;
+  background: color-mix(in lab, var(--scene) 6%, white);
+  border-radius: var(--radius);
+  box-shadow:
+    0 28px 60px rgba(0,0,0,.25),
+    0 8px 18px rgba(0,0,0,.12),
+    inset 0 0 0 1px color-mix(in lab, var(--scene) 20%, white);
   overflow:hidden; display:grid; grid-template-rows: 1fr;
 }
 .pages{position:relative; overflow:hidden}
 .page{
-  position:absolute; inset:0; opacity:0; transform: translateY(10px) scale(.98);
+  position:absolute; inset:0; opacity:0; transform: translateY(10px) scale(.985);
   transition: .45s ease; padding: clamp(12px, 3vw, 28px); display:grid; place-items:center;
 }
 .page.active{opacity:1; transform:none}
 
-/* video box */
-.vbox{ position:relative; width:100%; height:100%; background:#000; border-radius:16px; overflow:hidden;
-       display:flex; align-items:center; justify-content:center; }
-.vbox video{ max-width:100%; max-height:100%; width:auto; height:auto; background:transparent; display:block; }
+/* —— 影片容器 —— */
+.vbox{
+  position:relative; width:100%; height:100%; background:var(--scene);
+  border-radius:16px; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: inset 0 0 0 1px color-mix(in lab, var(--scene) 40%, white);
+}
+.vbox video{ max-width:100%; max-height:100%; width:auto; height:auto; background:transparent; display:block }
 
-/* Center Play fallback */
-.playBtn{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:10; border:none; border-radius:999px;
-  background: radial-gradient(120% 120% at 20% 20%, var(--gold1), var(--gold2));
-  color: var(--goldText); padding:16px 22px; font-weight:900; font-size:18px;
-  box-shadow:0 12px 28px rgba(0,0,0,.25); cursor:pointer; display:none; }
+/* —— 播放按鈕（與場景調和的玻璃膠囊） —— */
+.playBtn, .pillBtn{
+  --pill-bg: linear-gradient( to bottom right,
+    color-mix(in lab, #fff6 40%, var(--gold1)),
+    color-mix(in lab, #0000 0%, var(--gold2)) );
+  --pill-border: color-mix(in lab, var(--scene) 30%, white);
+}
+.playBtn{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:10; border:1px solid var(--pill-border); border-radius:999px;
+  background: var(--pill-bg); color: var(--goldText); padding:16px 22px; font-weight:900; font-size:18px;
+  box-shadow:0 12px 28px rgba(0,0,0,.28), inset 0 0 0 1px #fff3;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  cursor:pointer; display:none;
+}
 .playBtn.show{ display:block }
 .playBtn .tri{ display:inline-block; width:0; height:0; border-left:12px solid var(--goldText); border-top:8px solid transparent; border-bottom:8px solid transparent; margin-right:8px; }
 
-/* P2 ascii page */
-.p2wrap{ position:relative; width:100%; height:100%; background:var(--ascii-bg);
+/* —— P2 ASCII —— */
+.p2wrap{
+  position:relative; width:100%; height:100%; background:var(--scene);
   border-radius:16px; display:flex; align-items:center; justify-content:center;
-  background-image: radial-gradient(800px 500px at 70% 40%, rgba(255,255,255,.06), rgba(0,0,0,.0)); }
-.p2wrap video{ max-width:100%; max-height:100%; width:auto; height:auto; background:transparent; display:block; }
-
-/* Grid 4 */
-.grid4{ display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100% }
-.badge{ display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px;
-  background:#fffdf3; text-decoration:none; color:inherit; min-height:180px; cursor:pointer;
-  box-shadow: 0 6px 18px rgba(0,0,0,.06); transition: transform .12s ease;
-  position:relative; z-index:1; touch-action:manipulation;
+  box-shadow: inset 0 0 0 1px color-mix(in lab, var(--scene) 40%, white);
 }
-.badge:hover{ transform: translateY(-2px) }
+.p2wrap video{ max-width:100%; max-height:100%; width:auto; height:auto; background:transparent; display:block }
+.ribbon{
+  position:absolute; top:10px; left:0; right:0; text-align:center;
+  font-weight:800; letter-spacing:.02em;
+  color: color-mix(in lab, white 92%, var(--scene));
+  text-shadow: 0 2px 8px color-mix(in lab, #000 60%, var(--scene)), 0 0 22px color-mix(in lab, #000 30%, var(--scene));
+  font-size: clamp(14px, 2.4vw, 20px);
+  opacity:.98;
+}
+
+/* —— 4 圖格 —— */
+.grid4{ display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100% }
+.badge{ display:grid; place-items:center; border:1px solid color-mix(in lab, var(--scene) 25%, white); border-radius:16px;
+  background: color-mix(in lab, var(--scene) 8%, white);
+  text-decoration:none; color:inherit; min-height:180px; cursor:pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08); transition: transform .12s ease, box-shadow .2s ease; position:relative; z-index:1; touch-action:manipulation;
+}
+.badge:hover{ transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.12) }
 .badge img{ width:min(42vw,220px); height:min(42vw,220px); object-fit:contain; pointer-events:none }
 
-/* Unified pill buttons */
-@keyframes softGlow{ 0%,100%{ box-shadow:0 0 0 rgba(255,207,77,0); } 50%{ box-shadow:0 0 18px rgba(255,207,77,.55); } }
+/* —— 膠囊按鈕（統一風格） —— */
+@keyframes softGlow{ 0%,100%{ box-shadow:0 0 0 rgba(255,207,77,0); } 50%{ box-shadow:0 0 22px rgba(255,207,77,.45); } }
 .pillBtn{ display:inline-flex; align-items:center; gap:.55rem;
-  background: radial-gradient(120% 120% at 20% 20%, var(--gold1), var(--gold2));
-  color: var(--goldText); border:none; border-radius:999px; padding:.9rem 1.2rem; font-weight:900;
-  cursor:pointer; animation: softGlow 2.3s infinite ease-in-out; }
-.pillBtn.dark{ background:#111; color:#fff; animation:none }
+  background: var(--pill-bg);
+  color: var(--goldText); border:1px solid var(--pill-border); border-radius:999px; padding:.85rem 1.15rem; font-weight:900;
+  cursor:pointer; animation: softGlow 2.3s infinite ease-in-out; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.pillBtn.dark{ background: linear-gradient( to bottom right, color-mix(in lab, #fff6 10%, var(--scene)), color-mix(in lab, #0000 0%, var(--scene)) );
+  color:#fff; border-color: color-mix(in lab, var(--scene) 15%, white); animation:none }
 .pillBtn .ico{ filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
 .nextFab{ position:absolute; right:18px; bottom:18px; z-index:20; display:none }
 .nextFab.show{ display:inline-flex }
 
-/* Finale overlay */
-.final-msg{ position:absolute; inset:0; display:none; place-items:center; background:rgba(0,0,0,0) }
+/* —— Finale —— */
+.final-msg{ position:absolute; inset:0; display:none; place-items:center; background:linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15)) }
 .final-msg .inner{ text-align:center; padding:14px 18px; border-radius:16px;
-  background: linear-gradient( to bottom, rgba(0,0,0,.55), rgba(0,0,0,.25) );
+  background: linear-gradient( to bottom, rgba(0,0,0,.35), rgba(0,0,0,.15) );
   box-shadow: 0 18px 44px rgba(0,0,0,.35); }
-.final-msg .jp{ color:#fff; font-weight:900; letter-spacing:.04em; font-size:clamp(32px,6vw,80px);
-  text-shadow: 0 2px 8px rgba(0,0,0,.6), 0 0 2px rgba(0,0,0,.9), 0 0 10px rgba(0,0,0,.7); }
+.final-msg .jp{
+  font-family: "Zen Maru Gothic","Noto Serif JP", system-ui, -apple-system, "Hiragino Sans", "Yu Gothic", "Microsoft JhengHei", sans-serif;
+  color:#fff; font-weight:800; letter-spacing:.04em; white-space:nowrap;
+  font-size: clamp(24px, 8.2vw, 56px);             /* 手機變小、不換行 */
+  text-shadow: 0 2px 12px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.9), 0 0 14px rgba(0,0,0,.8);
+}
 .final-msg .btns{ margin-top:16px; display:flex; gap:10px; justify-content:center }
 .final-msg .btns .pillBtn{ animation:none }
 
-/* Pop layers */
-.layer{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.5);
-  z-index:999999; /* 超高，確保蓋過一切 */ }
+/* —— Pop layers（純 CSS 後備） —— */
+.layer{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.5); z-index:999999 }
 .layer:target{ display:grid }
 .layer .panel{ background:#fff; color:#222; padding:24px; border-radius:18px; width:min(92vw,720px);
   text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6; border:2px solid var(--gold2);
   box-shadow:0 22px 60px rgba(0,0,0,.35) }
 .layer .panel a{ display:inline-block; margin-top:16px }
+
+/* —— 點擊小彩蛋（✨） —— */
+.spark{ position:absolute; font-size:18px; pointer-events:none; animation: rise .65s ease-out forwards }
+@keyframes rise{
+  from{ transform: translateY(0) scale(1); opacity:1 }
+  to{ transform: translateY(-26px) scale(1.2); opacity:0 }
+}
 </style>
 </head>
 <body>
@@ -103,7 +149,7 @@ body{
     <div class="pages">
       <!-- p1 -->
       <section class="page active" id="p1">
-        <div class="vbox">
+        <div class="vbox" id="boxIntro">
           <video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png">
             <source id="sIntro" src="envelope_open.mp4" type="video/mp4">
           </video>
@@ -114,6 +160,7 @@ body{
       <!-- p2 -->
       <section class="page" id="p2">
         <div class="p2wrap" id="p2wrap">
+          <div class="ribbon">給博皓學長～by 62期學員亞璇</div>
           <video id="vAscii" playsinline webkit-playsinline muted preload="auto" loop>
             <source id="sAscii" src="ascii_anim.mp4" type="video/mp4">
           </video>
@@ -123,16 +170,16 @@ body{
       <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4" id="grid4">
-          <a class="badge" href="#m1" data-msg="工作辛苦了，加油 💪✨" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot1" alt="能量瓶"></a>
-          <a class="badge" href="#m2" data-msg="工作一切順利～ 🌈" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot2" alt="好天氣"></a>
-          <a class="badge" href="#m3" data-msg="希望今天沒有突發狀況，是順心好日子！🍀" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot3" alt="花束"></a>
-          <a class="badge" href="#m4" data-msg="呈上真心的萬分感謝 ✨⭐️❤️" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot4" alt="禮物"></a>
+          <a class="badge" href="#m1" data-msg="工作辛苦了，加油 💪✨" onclick="return showMsg(this,event)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot1" alt="能量瓶"></a>
+          <a class="badge" href="#m2" data-msg="工作一切順利～ 🌈" onclick="return showMsg(this,event)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot2" alt="好天氣"></a>
+          <a class="badge" href="#m3" data-msg="希望今天沒有突發狀況，是順心好日子！🍀" onclick="return showMsg(this,event)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot3" alt="花束"></a>
+          <a class="badge" href="#m4" data-msg="呈上真心的萬分感謝 ✨⭐️❤️" onclick="return showMsg(this,event)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot4" alt="禮物"></a>
         </div>
         <button class="pillBtn nextFab" id="nextFab3"><span class="ico">⚡️</span><span>下一頁</span></button>
       </section>
       <!-- p4 -->
       <section class="page" id="p4">
-        <div class="vbox">
+        <div class="vbox" id="boxFinal">
           <video id="vFinale" playsinline webkit-playsinline muted preload="auto">
             <source id="sFinale" src="finale.mp4" type="video/mp4">
           </video>
@@ -162,6 +209,13 @@ body{
 
 <script>
 (function(){
+  const root = document.documentElement;
+  const setScene = (hex)=>{ 
+    root.style.setProperty('--scene', hex);
+    // 淡一點的版本
+    root.style.setProperty('--scene-soft', hex);
+  };
+
   const VER = Date.now().toString(36);
   const bust = (u)=> u + (u.includes('?') ? '&' : '?') + 'v=' + VER;
   ['sIntro','sAscii','sFinale'].forEach(id=>{
@@ -179,8 +233,8 @@ body{
     nextFab.classList.toggle('show', idx===0 && introEnded);
     nextFab2.classList.toggle('show', idx===1);
     nextFab3.classList.toggle('show', idx===2);
-    if(idx===1){ ensurePlay(vAscii); setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 120); }
-    if(idx===3){ ensurePlay(vFinale); }
+    if(idx===1){ ensurePlay(vAscii); setTimeout(()=> applySceneFromVideo(vAscii, boxAscii), 150); }
+    if(idx===3){ ensurePlay(vFinale); setTimeout(()=> applySceneFromVideo(vFinale, boxFinal), 150); }
   }
 
   const nextFab=document.getElementById('nextFab');
@@ -193,7 +247,9 @@ body{
   const vIntro=document.getElementById('vIntro');
   const vAscii=document.getElementById('vAscii');
   const vFinale=document.getElementById('vFinale');
-  const p2wrap=document.getElementById('p2wrap');
+  const boxIntro=document.getElementById('boxIntro');
+  const boxFinal=document.getElementById('boxFinal');
+  const boxAscii=document.getElementById('p2wrap');
 
   const p1Play=document.getElementById('p1Play');
   function tryAutoStart(){
@@ -205,6 +261,7 @@ body{
   vIntro.addEventListener('click', ()=> { if(vIntro.paused) vIntro.play().then(()=> p1Play.classList.remove('show')); });
 
   let introEnded=false;
+  vIntro.addEventListener('loadeddata', ()=> applySceneFromVideo(vIntro, boxIntro), {once:true});
   vIntro.addEventListener('ended', ()=>{ introEnded=true; nextFab.classList.add('show'); });
 
   const finalMsg=document.getElementById('finalMsg');
@@ -216,7 +273,7 @@ body{
     introEnded=false; show(0); tryAutoStart();
   };
 
-  // Share lazy
+  // 分享
   let shareLayer=null;
   document.getElementById('btnShare').onclick=()=>{
     if(!shareLayer){
@@ -246,41 +303,58 @@ body{
     }else{ shareLayer.style.display='grid'; }
   };
 
-  // expose showMsg for inline onclick
-  window.showMsg = function(el){
+  // 彈窗（JS 增強）+ 彩蛋
+  window.showMsg = function(el, ev){
     try{
+      if(ev){ ev.preventDefault(); ev.stopPropagation(); }
       const dyn = document.getElementById('dyn');
       const dynText = document.getElementById('dynText');
       dynText.textContent = el.getAttribute('data-msg') || 'pika~';
       dyn.style.display = 'grid';
-      return false; // stop default anchor
-    }catch(e){
-      return true; // fallback to :target
-    }
+      // 小彩蛋：✨
+      const rect = el.getBoundingClientRect();
+      for(let i=0;i<10;i++){
+        const s=document.createElement('div');
+        s.className='spark'; s.textContent = Math.random()>0.5?'✨':'⚡️';
+        s.style.left = (rect.left + rect.width/2 + (Math.random()*60-30)) + 'px';
+        s.style.top  = (rect.top  + rect.height/2 + (Math.random()*30-15)) + 'px';
+        s.style.position='fixed';
+        document.body.appendChild(s);
+        setTimeout(()=>s.remove(), 700);
+      }
+      return false;
+    }catch(e){ return true; }
   };
   window.keyMsg = function(ev,el){
     if(ev.key==='Enter' || ev.key===' '){
       ev.preventDefault();
-      return showMsg(el);
+      return showMsg(el,ev);
     }
     return true;
   };
 
   function ensurePlay(video){ video.play().catch(()=>{ video.controls=true; }); }
-  async function sampleBg(video){
+
+  // 由影片取樣色→套用背景
+  function applySceneFromVideo(video, box){
     try{
-      if(!video.videoWidth) return null;
-      const w=48,h=Math.max(1,Math.round(48*video.videoHeight/video.videoWidth));
+      if(!video.videoWidth) return;
+      const w=64,h=Math.max(1,Math.round(64*video.videoHeight/video.videoWidth));
       const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
       c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h);
       const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
       for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
-      r=Math.max(0, Math.round(r/n*0.7)); g=Math.max(0, Math.round(g/n*0.7)); b=Math.max(0, Math.round(b/n*0.7));
-      return `rgb(${r},${g},${b})`;
-    }catch(e){ return null; }
+      r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+      const hex = rgbToHex(r,g,b);
+      setScene(hex);
+      if(box) box.style.background = hex;
+    }catch(e){}
+  }
+  function rgbToHex(r,g,b){
+    return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
   }
 
-  // Load four images with extension fallback + cache bust
+  // 載入四張圖片（自動辨識副檔名 + cache bust）
   const exts=['png','jpg','jpeg','webp','svg'];
   function loadImg(id,bases){ const el=document.getElementById(id);
     (function tryNextBase(bi){ if(bi>=bases.length){ el.alt=''; return; }
@@ -298,7 +372,7 @@ body{
   loadImg('slot3',['slot3','pic3','opt3']);
   loadImg('slot4',['slot4','pic4','opt4']);
 
-  // init
+  // 啟動
   show(0);
 })();
 </script>
