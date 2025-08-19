@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — 簡化流程 v4</title>
+<title>感謝卡 — 簡化流程 v5</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -25,9 +25,11 @@ body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Sego
 /* video area */
 .vbox{position:relative;width:100%;height:100%;display:grid;place-items:center;background:#fff;border-radius:16px;overflow:hidden}
 .vbox video{width:100%;height:100%;object-fit:contain;background:transparent;display:block}
-.hint{position:absolute;right:10px;bottom:10px;background:#111;color:#fff;padding:.6rem 1rem;border-radius:12px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.2);z-index:5}
-/* 專門覆蓋信封封蠟位置的大型熱區（中間 40% x 40%） */
-.hotspot{position:absolute;left:30%;top:30%;width:40%;height:40%;z-index:6;background:transparent;cursor:pointer;border:none}
+.playBtn{position:absolute;right:14px;bottom:14px;z-index:6;border:none;border-radius:14px;
+         background:#111;color:#fff;padding:.7rem 1rem;font-weight:800;
+         box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;gap:.45rem}
+.playBtn .tri{display:inline-block;width:0;height:0;border-left:10px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent}
+.playBtn.hide{display:none}
 
 /* ascii */
 .p2wrap{position:relative;width:100%;height:100%;background:#111;border-radius:16px;display:grid;place-items:center}
@@ -73,8 +75,7 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
       <section class="page active" id="p1">
         <div class="vbox" id="p1box">
           <video id="vIntro" playsinline webkit-playsinline preload="auto" muted poster="poster.png" src="envelope_open.mp4"></video>
-          <button class="hotspot" id="hotspot1" aria-label="點信封播放"></button>
-          <div class="hint" id="hint1">點信封播放 ✉️</div>
+          <button class="playBtn" id="playIntro"><span class="tri"></span>播放</button>
         </div>
       </section>
       <!-- p2 -->
@@ -146,14 +147,13 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
 
   /* p1 */
   const vIntro=document.getElementById('vIntro');
-  const hotspot1=document.getElementById('hotspot1');
-  const hint1=document.getElementById('hint1');
+  const playIntro=document.getElementById('playIntro');
   let introEnded=false;
-  function startIntro(){ vIntro.play().then(()=>{ hint1.style.display='none'; }).catch(()=>{}); }
-  hotspot1.addEventListener('click', startIntro);
-  vIntro.addEventListener('click', startIntro); // 點影片本身也可
-  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; }); // 開放下一頁
-  // 如果影片載不了，仍然顯示 poster.png（已寫在標籤上）
+  function startIntro(){ vIntro.play().then(()=>{ playIntro.classList.add('hide'); }).catch(()=>{}); }
+  playIntro.addEventListener('click', startIntro);
+  vIntro.addEventListener('click', startIntro); // 影片本身也可點
+  vIntro.addEventListener('pause', ()=>{ if(!vIntro.ended) playIntro.classList.remove('hide'); });
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; });
 
   /* p2 */
   const vAscii=document.getElementById('vAscii');
@@ -175,7 +175,7 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
   document.getElementById('btnReplay').onclick=()=>{
     finalMsg.style.display='none'; vFinale.pause(); vFinale.currentTime=0;
     vAscii.pause(); vAscii.currentTime=0;
-    vIntro.pause(); vIntro.currentTime=0; hint1.style.display=''; introEnded=false; show(0);
+    vIntro.pause(); vIntro.currentTime=0; playIntro.classList.remove('hide'); introEnded=false; show(0);
   };
 
   /* share */
