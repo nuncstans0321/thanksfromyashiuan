@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — Autoplay Flow v2 (Fixes)</title>
+<title>感謝卡 — Autoplay Flow v4</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{
   --bg:#fff8ec; --paper:#fffef9; --ink:#222;
-  --gold1:#ffe27a; --gold2:#ffcc4d; --goldText:#3b2a00;
-  --btnDark:#111; --btnLight:#fff;
+  --gold1:#ffe79b; --gold2:#ffcf4d; --goldText:#3b2a00;
+  --dark:#151515; --light:#fff;
   --radius:22px;
+  --ascii-bg:#0f1016; /* 可手動覆蓋成動畫底色 */
 }
 *{box-sizing:border-box} html,body{height:100%}
 body{
@@ -36,7 +37,7 @@ body{
 }
 .page.active{opacity:1; transform:none}
 
-/* --- video box: use flex-fit to avoid crop issues --- */
+/* --- video box: safe contain --- */
 .vbox{ position:relative; width:100%; height:100%; background:#000; border-radius:16px; overflow:hidden;
        display:flex; align-items:center; justify-content:center; }
 .vbox video{
@@ -49,15 +50,19 @@ body{
 .playBtn{
   position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   z-index:10; border:none; border-radius:999px;
-  background: linear-gradient(180deg, var(--gold1), var(--gold2));
+  background: radial-gradient(120% 120% at 20% 20%, var(--gold1), var(--gold2));
   color: var(--goldText); padding:16px 22px; font-weight:900; font-size:18px;
   box-shadow:0 12px 28px rgba(0,0,0,.25); cursor:pointer; display:none;
 }
 .playBtn.show{ display:block }
 .playBtn .tri{ display:inline-block; width:0; height:0; border-left:12px solid var(--goldText); border-top:8px solid transparent; border-bottom:8px solid transparent; margin-right:8px; }
 
-/* --- P2 ascii page bg --- */
-.p2wrap{position:relative; width:100%; height:100%; background:#111; border-radius:16px; display:flex; align-items:center; justify-content:center}
+/* --- P2 ascii page --- */
+.p2wrap{
+  position:relative; width:100%; height:100%; background:var(--ascii-bg);
+  border-radius:16px; display:flex; align-items:center; justify-content:center;
+  background-image: radial-gradient(800px 500px at 70% 40%, rgba(255,255,255,.06), rgba(0,0,0,.0));
+}
 .p2wrap video{ max-width:100%; max-height:100%; width:auto; height:auto; background:transparent; display:block; }
 
 /* --- Grid 4 --- */
@@ -65,62 +70,46 @@ body{
 .badge{
   display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px;
   background:#fffdf3; text-decoration:none; color:inherit; min-height:180px; cursor:pointer;
-  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,.06); transition: transform .12s ease;
 }
-.badge img{ width:min(42vw,220px); height:min(42vw,220px); object-fit:contain }
+.badge:hover{ transform: translateY(-2px) }
+.badge img{ width:min(42vw,220px); height:min(42vw,220px); object-fit:contain; pointer-events:none }
 
-/* --- Floating Next FAB (design-consistent) --- */
-.nextFab{
-  position:absolute; right:18px; bottom:18px; z-index:20;
-  display:none; align-items:center; gap:.6rem;
-  background: linear-gradient(180deg, var(--gold1), var(--gold2));
-  color: var(--goldText);
-  border:none; border-radius:999px; padding:.9rem 1.15rem; font-weight:900;
-  box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer;
+/* --- Unified Buttons (pill) --- */
+@keyframes softGlow{ 0%,100%{ box-shadow:0 0 0 rgba(255,207,77,0); } 50%{ box-shadow:0 0 18px rgba(255,207,77,.55); } }
+.pillBtn{
+  display:inline-flex; align-items:center; gap:.55rem;
+  background: radial-gradient(120% 120% at 20% 20%, var(--gold1), var(--gold2));
+  color: var(--goldText); border:none; border-radius:999px; padding:.9rem 1.2rem; font-weight:900;
+  cursor:pointer; animation: softGlow 2.3s infinite ease-in-out;
 }
-.nextFab.show{ display:flex }
-.nextFab .chev{ width:8px; height:8px; border-right:3px solid var(--goldText); border-bottom:3px solid var(--goldText); transform:rotate(-45deg) translateY(-1px); display:inline-block }
+.pillBtn.dark{ background:#111; color:#fff; animation:none }
+.pillBtn .ico{ filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+.nextFab{ position:absolute; right:18px; bottom:18px; z-index:20; display:none }
+.nextFab.show{ display:inline-flex }
 
-/* --- Popups (z-index very high to ensure visibility) --- */
-.layer{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; place-items:center; z-index:9999 }
-.layer:target{ display:grid }
-.layer .box{
-  background:#fff; color:#222; padding:24px; border-radius:18px;
-  width:min(92vw,720px); text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6;
-  box-shadow:0 22px 60px rgba(0,0,0,.35)
-}
-.layer .ok{ display:inline-block; margin-top:16px; background:#111; color:#fff; padding:.75rem 1.2rem; border-radius:12px; text-decoration:none; font-weight:900 }
-.layer .bgclose{ position:absolute; inset:0; content:""; display:block }
-
-/* --- Finale overlay text: strong readability --- */
+/* --- Finale overlay text --- */
 .final-msg{ position:absolute; inset:0; display:none; place-items:center; background:rgba(0,0,0,0) }
-.final-msg .inner{ text-align:center; padding:10px 14px; border-radius:16px;
+.final-msg .inner{ text-align:center; padding:14px 18px; border-radius:16px;
   background: linear-gradient( to bottom, rgba(0,0,0,.55), rgba(0,0,0,.25) );
   box-shadow: 0 18px 44px rgba(0,0,0,.35);
 }
 .final-msg .jp{
-  color:#fff; font-weight:900; letter-spacing:.04em; font-size:clamp(28px,5vw,72px);
-  text-shadow:
-    0 2px 8px rgba(0,0,0,.6),
-    0 0 2px rgba(0,0,0,.9),
-    0 0 10px rgba(0,0,0,.7);
+  color:#fff; font-weight:900; letter-spacing:.04em; font-size:clamp(32px,6vw,80px);
+  text-shadow: 0 2px 8px rgba(0,0,0,.6), 0 0 2px rgba(0,0,0,.9), 0 0 10px rgba(0,0,0,.7);
 }
-.final-msg .jp small{ display:block; font-size:.45em; opacity:.85; margin-top:.2em }
 .final-msg .btns{ margin-top:16px; display:flex; gap:10px; justify-content:center }
-.btn{
-  appearance:none; border:none; padding:.9rem 1.1rem; border-radius:12px; font-weight:900; cursor:pointer;
-  box-shadow:0 12px 28px rgba(0,0,0,.22);
-}
-.btn.alt{ background: linear-gradient(180deg, var(--gold1), var(--gold2)); color: var(--goldText) }
-.btn.dark{ background:#111; color:#fff }
+.final-msg .btns .pillBtn{ animation:none }
 
-/* --- Share modal --- */
-.shareLayer{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:60 }
-.shareLayer.show{ display:grid }
-.shareCard{ background:#fff; padding:20px; border-radius:16px; width:min(92vw,420px); box-shadow:0 16px 44px rgba(0,0,0,.33); text-align:center }
-.shareCard .qr{ display:grid; place-items:center; margin:10px auto }
-.shareCard .row{ display:flex; gap:8px; justify-content:center; margin-top:8px }
-.copyNote{ font-size:13px; color:#666; margin-top:6px }
+/* --- JS Modal for 4-image messages --- */
+.modal{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:9999 }
+.modal.show{ display:grid }
+.modal .panel{
+  background:#fff; color:#222; padding:24px; border-radius:18px; width:min(92vw,720px);
+  text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6;
+  box-shadow:0 22px 60px rgba(0,0,0,.35); border:2px solid var(--gold2)
+}
+.modal .actions{ margin-top:16px }
 </style>
 </head>
 <body>
@@ -135,7 +124,7 @@ body{
           </video>
           <button class="playBtn" id="p1Play"><span class="tri"></span>播放</button>
         </div>
-        <button class="nextFab" id="nextFab"><span>下一頁</span><span class="chev"></span></button>
+        <button class="pillBtn nextFab" id="nextFab"><span class="ico">⚡️</span><span>下一頁</span></button>
       </section>
       <!-- p2 -->
       <section class="page" id="p2">
@@ -144,17 +133,17 @@ body{
             <source id="sAscii" src="ascii_anim.mp4" type="video/mp4">
           </video>
         </div>
-        <button class="nextFab" id="nextFab2"><span>下一頁</span><span class="chev"></span></button>
+        <button class="pillBtn nextFab" id="nextFab2"><span class="ico">⚡️</span><span>下一頁</span></button>
       </section>
       <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4">
-          <a class="badge" href="#pop1" role="button" aria-label="工作辛苦了"><img id="slot1" alt="能量瓶"></a>
-          <a class="badge" href="#pop2" role="button" aria-label="工作順利"><img id="slot2" alt="好天氣"></a>
-          <a class="badge" href="#pop3" role="button" aria-label="順心好日子"><img id="slot3" alt="花束"></a>
-          <a class="badge" href="#pop4" role="button" aria-label="真心感謝"><img id="slot4" alt="禮物"></a>
+          <button class="badge" type="button" id="b1" aria-label="工作辛苦了"><img id="slot1" alt="能量瓶"></button>
+          <button class="badge" type="button" id="b2" aria-label="工作順利"><img id="slot2" alt="好天氣"></button>
+          <button class="badge" type="button" id="b3" aria-label="順心好日子"><img id="slot3" alt="花束"></button>
+          <button class="badge" type="button" id="b4" aria-label="真心感謝"><img id="slot4" alt="禮物"></button>
         </div>
-        <button class="nextFab" id="nextFab3"><span>下一頁</span><span class="chev"></span></button>
+        <button class="pillBtn nextFab" id="nextFab3"><span class="ico">⚡️</span><span>下一頁</span></button>
       </section>
       <!-- p4 -->
       <section class="page" id="p4">
@@ -164,36 +153,26 @@ body{
           </video>
           <div class="final-msg" id="finalMsg">
             <div class="inner">
-              <div class="jp">ありがとうございます<small>いつも応援してくれて、ほんとうに感謝です。</small></div>
+              <div class="jp">ありがとうございます</div>
               <div class="btns">
-                <button class="btn alt" id="btnReplay">再一次</button>
-                <button class="btn dark" id="btnShare">分享</button>
+                <button class="pillBtn" id="btnReplay"><span class="ico">🔁</span><span>再一次</span></button>
+                <button class="pillBtn dark" id="btnShare"><span class="ico">🔗</span><span>分享</span></button>
               </div>
             </div>
           </div>
         </div>
-        <!-- 沒有完成鈕了 -->
       </section>
     </div>
   </div>
 </div>
 
-<!-- Popups -->
-<section id="pop1" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">工作辛苦了，加油 💪✨<br><a class="ok" href="#p3">pika~</a></div></section>
-<section id="pop2" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">工作一切順利～ 🌈<br><a class="ok" href="#p3">pika~</a></div></section>
-<section id="pop3" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="ok" href="#p3">pika~</a></div></section>
-<section id="pop4" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="ok" href="#p3">pika~</a></div></section>
-
-<!-- Share modal -->
-<div class="shareLayer" id="shareLayer">
-  <div class="shareCard">
-    <h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
-    <div id="qr" class="qr"></div>
-    <div class="row">
-      <button class="btn dark" id="copyUrl">複製網址</button>
-      <button class="btn alt" id="closeShare">關閉</button>
+<!-- JS Modal markup -->
+<div class="modal" id="msgModal" role="dialog" aria-modal="true" aria-labelledby="msgText">
+  <div class="panel">
+    <div id="msgText">...</div>
+    <div class="actions">
+      <button class="pillBtn" id="msgClose"><span class="ico">✨</span><span>pika~</span></button>
     </div>
-    <div class="copyNote" id="copyNote"></div>
   </div>
 </div>
 
@@ -214,18 +193,21 @@ body{
     pages[idx].classList.remove('active');
     idx=Math.max(0,Math.min(pages.length-1,i));
     pages[idx].classList.add('active');
-    // 控制 FAB 顯示
-    document.getElementById('nextFab').classList.toggle('show', idx===0 && introEnded);
-    document.getElementById('nextFab2').classList.toggle('show', idx===1);
-    document.getElementById('nextFab3').classList.toggle('show', idx===2);
-    if(idx===1){ ensurePlay(vAscii); setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 80); }
+    // 控制下一頁 BTN 顯示
+    nextFab.classList.toggle('show', idx===0 && introEnded);
+    nextFab2.classList.toggle('show', idx===1);
+    nextFab3.classList.toggle('show', idx===2);
+    if(idx===1){ ensurePlay(vAscii); setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 120); }
     if(idx===3){ ensurePlay(vFinale); }
   }
 
   // Next FAB actions
-  document.getElementById('nextFab').onclick = ()=> show(1);
-  document.getElementById('nextFab2').onclick = ()=> show(2);
-  document.getElementById('nextFab3').onclick = ()=> show(3);
+  const nextFab=document.getElementById('nextFab');
+  const nextFab2=document.getElementById('nextFab2');
+  const nextFab3=document.getElementById('nextFab3');
+  nextFab.onclick=()=>show(1);
+  nextFab2.onclick=()=>show(2);
+  nextFab3.onclick=()=>show(3);
 
   // Videos
   const vIntro=document.getElementById('vIntro');
@@ -244,7 +226,7 @@ body{
   vIntro.addEventListener('click', ()=> { if(vIntro.paused) vIntro.play().then(()=> p1Play.classList.remove('show')); });
 
   let introEnded=false;
-  vIntro.addEventListener('ended', ()=>{ introEnded=true; document.getElementById('nextFab').classList.add('show'); });
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; nextFab.classList.add('show'); });
 
   // Finale ended -> show thanks
   const finalMsg=document.getElementById('finalMsg');
@@ -258,31 +240,70 @@ body{
   };
 
   // Share
-  const shareLayer=document.getElementById('shareLayer');
-  document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
-  document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
-  document.getElementById('copyUrl').onclick=async ()=>{
-    const url=location.href.split('#')[0];
-    try{ await navigator.clipboard.writeText(url); document.getElementById('copyNote').textContent='已複製網址 ✔'; }
-    catch(e){ document.getElementById('copyNote').textContent=url; }
-  };
-  function buildQR(){
-    const box=document.getElementById('qr'); box.innerHTML='';
-    if(window.QRCode){ new QRCode(box, {text: location.href.split('#')[0], width:220, height:220}); }
-    else { box.textContent = location.href.split('#')[0]; }
-  }
+  const shareLayer = (()=>{
+    // build share layer on demand to keep DOM light
+    let layer=null;
+    function open(){
+      if(!layer){
+        layer=document.createElement('div');
+        layer.className='modal show';
+        layer.innerHTML=`<div class="panel"><h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
+          <div id="qr" style="display:grid;place-items:center;margin:10px auto"></div>
+          <div class="actions" style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+            <button class="pillBtn dark" id="copyUrl"><span class="ico">📋</span><span>複製網址</span></button>
+            <button class="pillBtn" id="closeShare"><span class="ico">✖</span><span>關閉</span></button>
+          </div>
+          <div id="copyNote" style="font-size:13px;color:#666;margin-top:6px;text-align:center"></div>
+        </div>`;
+        document.body.appendChild(layer);
+        layer.addEventListener('click',(e)=>{ if(e.target===layer){ close(); } });
+        layer.querySelector('#closeShare').onclick = close;
+        layer.querySelector('#copyUrl').onclick = async ()=>{
+          const url=location.href.split('#')[0];
+          try{ await navigator.clipboard.writeText(url); layer.querySelector('#copyNote').textContent='已複製網址 ✔'; }
+          catch(e){ layer.querySelector('#copyNote').textContent=url; }
+        };
+        if(window.QRCode){
+          new QRCode(layer.querySelector('#qr'), {text: location.href.split('#')[0], width:220, height:220});
+        }else{
+          layer.querySelector('#qr').textContent = location.href.split('#')[0];
+        }
+      }else{
+        layer.classList.add('show');
+      }
+    }
+    function close(){ if(layer) layer.classList.remove('show'); }
+    return {open, close};
+  })();
+  document.getElementById('btnShare').onclick=()=> shareLayer.open();
+
+  // 4-image messages via JS modal
+  const modal=document.getElementById('msgModal');
+  const msgText=document.getElementById('msgText');
+  const msgClose=document.getElementById('msgClose');
+  function openMsg(t){ msgText.textContent=t; modal.classList.add('show'); }
+  function closeMsg(){ modal.classList.remove('show'); }
+  ['click','touchend'].forEach(ev=>{
+    document.getElementById('b1').addEventListener(ev, ()=> openMsg('工作辛苦了，加油 💪✨'), {passive:true});
+    document.getElementById('b2').addEventListener(ev, ()=> openMsg('工作一切順利～ 🌈'), {passive:true});
+    document.getElementById('b3').addEventListener(ev, ()=> openMsg('希望今天沒有突發狀況，是順心好日子！🍀'), {passive:true});
+    document.getElementById('b4').addEventListener(ev, ()=> openMsg('呈上真心的萬分感謝 ✨⭐️❤️'), {passive:true});
+  });
+  modal.addEventListener('click', (e)=>{ if(e.target===modal) closeMsg(); });
+  msgClose.addEventListener('click', closeMsg);
 
   // helpers
   function ensurePlay(video){ video.play().catch(()=>{ video.controls=true; }); }
   async function sampleBg(video){
     try{
       if(!video.videoWidth) return null;
-      const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth));
+      const w=48,h=Math.max(1,Math.round(48*video.videoHeight/video.videoWidth));
       const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
       c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h);
       const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
       for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
-      r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+      // 稍微壓暗以貼近動畫底色
+      r=Math.max(0, Math.round(r/n*0.7)); g=Math.max(0, Math.round(g/n*0.7)); b=Math.max(0, Math.round(b/n*0.7));
       return `rgb(${r},${g},${b})`;
     }catch(e){ return null; }
   }
