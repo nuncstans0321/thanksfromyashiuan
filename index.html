@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — 簡化流程版</title>
+<title>感謝卡 — 簡化流程 v3</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -27,62 +27,48 @@ body{
   justify-content:center;
   overflow:hidden;
 }
-.stage{
-  width:min(980px,96vw);
-  height:min(700px,94svh);
-  position:relative;
-}
+.stage{ width:min(980px,96vw); height:min(700px,94svh); position:relative; }
 @supports not (height: 1svh){ .stage{height:min(700px,94vh);} }
-.card{
-  position:absolute; inset:0;
-  background:var(--paper);
-  border-radius: var(--radius);
+.card{ position:absolute; inset:0; background:var(--paper); border-radius: var(--radius);
   box-shadow:0 20px 60px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.07);
-  overflow:hidden;
-  display:grid; grid-template-rows: 1fr auto;
-}
+  overflow:hidden; display:grid; grid-template-rows: 1fr auto; }
 .pages{position:relative; overflow:hidden}
-.page{
-  position:absolute; inset:0;
-  opacity:0; transform: translateY(10px) scale(.98);
-  transition: .45s ease;
-  padding: clamp(12px, 3vw, 28px);
-  display:grid; place-items:center;
-}
+.page{ position:absolute; inset:0; opacity:0; transform: translateY(10px) scale(.98);
+  transition: .45s ease; padding: clamp(12px, 3vw, 28px); display:grid; place-items:center; }
 .page.active{opacity:1; transform:none}
-/* --- page: video full area --- */
-.vbox{
-  position:relative;
-  width:100%; height:100%;
-  display:grid; place-items:center;
-  background:#fff; /* 防黑背景，poster下也好看 */
-  border-radius: 16px;
-}
-.vbox video, .vbox img{
-  width:100%; height:100%;
-  object-fit:contain; background:transparent; display:block;
-}
-.hint{position:absolute; right:10px; bottom:10px; background:var(--hint); color:#fff; padding:.6rem 1rem; border-radius:12px; font-weight:800; box-shadow:0 8px 20px rgba(0,0,0,.2)}
-.playmask{position:absolute; inset:0; cursor:pointer; background:transparent; border:none}
-.shield{position:absolute; inset:0; background:#fff; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.03); transition: opacity .35s ease; opacity:0; pointer-events:none}
+
+/* --- video box --- */
+.vbox{ position:relative; width:100%; height:100%; display:grid; place-items:center; background:#fff; border-radius:16px; overflow:hidden; }
+.vbox video, .vbox img{ position:relative; z-index:1; width:100%; height:100%; object-fit:contain; background:transparent; display:block; }
+.hint{ position:absolute; right:10px; bottom:10px; background:var(--hint); color:#fff; padding:.6rem 1rem;
+  border-radius:12px; font-weight:800; box-shadow:0 8px 20px rgba(0,0,0,.2); z-index:3; }
+.playmask{ position:absolute; inset:0; cursor:pointer; background:transparent; border:none; z-index:4; }
+.shield{ position:absolute; inset:0; background:#fff; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.03);
+  transition: opacity .35s ease; opacity:0; pointer-events:none; z-index:2; }
 .shield.hide{opacity:0; pointer-events:none}
+
 /* --- ascii page bg --- */
 .p2wrap{position:relative; width:100%; height:100%; background:#111; border-radius:16px; display:grid; place-items:center}
 .p2wrap video{width:100%; height:100%; object-fit:contain; background:transparent}
+
 /* --- grid 4 --- */
 .grid4{display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100%}
 .badge{display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px; background:#fffdf3; text-decoration:none; color:inherit; min-height:180px}
 .badge img{width:min(42vw,200px); height:min(42vw,200px); object-fit:contain}
+
 /* --- nav --- */
 .nav{display:flex; gap:10px; justify-content:flex-end; padding:10px}
 button.btn{appearance:none; border:none; padding:.8rem 1.1rem; border-radius:12px; background:#111; color:#fff; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.12)}
 button.btn.alt{background:var(--gold); color:#3b2a00}
+button.btn[disabled]{opacity:.5; pointer-events:none}
+
 /* --- popup target --- */
 .layer{position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; place-items:center; z-index:50}
 .layer:target{display:grid}
 .layer .box{background:#fff; color:#222; padding:22px; border-radius:16px; width:min(92vw,720px); text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6; box-shadow:0 16px 44px rgba(0,0,0,.28)}
 .layer .ok{display:inline-block; margin-top:14px; background:#111; color:#fff; padding:.7rem 1.1rem; border-radius:12px; text-decoration:none; font-weight:800}
 .layer .bgclose{position:absolute; inset:0; content:""; display:block}
+
 /* --- finale overlay --- */
 .final-msg{position:absolute; inset:0; display:none; place-items:center; background:rgba(255,255,255,.0)}
 .final-msg .inner{text-align:center}
@@ -105,9 +91,9 @@ button.btn.alt{background:var(--gold); color:#3b2a00}
       <section class="page active" id="p1">
         <div class="vbox" id="p1box">
           <video id="vIntro" playsinline webkit-playsinline preload="auto" muted></video>
-          <div class="shield" id="shield1" class="hide"></div>
+          <div class="shield" id="shield1"></div>
           <button class="playmask" id="playIntro" aria-label="點擊播放"></button>
-          <div class="hint">點一下播放</div>
+          <div class="hint" id="hint1">點一下播放</div>
         </div>
       </section>
       <!-- Page 2: ascii_anim.mp4 -->
@@ -144,7 +130,7 @@ button.btn.alt{background:var(--gold); color:#3b2a00}
     </div>
     <div class="nav">
       <button class="btn" id="btnPrev">上一頁</button>
-      <button class="btn alt" id="btnNext">下一頁</button>
+      <button class="btn alt" id="btnNext" disabled>下一頁</button>
     </div>
   </div>
 </div>
@@ -173,29 +159,37 @@ button.btn.alt{background:var(--gold); color:#3b2a00}
   const pages=[...document.querySelectorAll('.page')];
   let idx=0;
   const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
-  function show(i){ pages[idx].classList.remove('active'); idx=Math.max(0,Math.min(pages.length-1,i)); pages[idx].classList.add('active'); next.textContent=(idx===pages.length-1)?'完成':'下一頁'; }
+  function show(i){
+    pages[idx].classList.remove('active');
+    idx=Math.max(0,Math.min(pages.length-1,i));
+    pages[idx].classList.add('active');
+    next.textContent=(idx===pages.length-1)?'完成':'下一頁';
+    if(idx===0 && !introEnded){ next.disabled=true; } else { next.disabled=false; }
+  }
   prev.onclick=()=>show(idx-1);
-  next.onclick=()=>{ if(idx===0 && !introEnded){ /* 若還沒播完就提示 */ return; } if(idx===pages.length-1){ return; } show(idx+1); };
+  next.onclick=()=>{ if(idx===pages.length-1){ return; } show(idx+1); };
   show(0);
 
   // ---------- Page 1 (intro video) ----------
   const vIntro=document.getElementById('vIntro');
   const shield1=document.getElementById('shield1');
   const playIntro=document.getElementById('playIntro');
+  const hint1=document.getElementById('hint1');
+
   // set poster & src
   fetch('poster.png',{cache:'no-store'}).then(r=>{ if(r.ok) vIntro.setAttribute('poster','poster.png'); }).catch(()=>{});
-  // prefer mp4 then webm
   (async ()=>{
     const cand=['envelope_open.mp4','envelope_open.webm','envelope_open.gif','envelope_open.apng','envelope_open.webp','envelope_open.svg'];
     for(const src of cand){ if(await exists(src)){ vIntro.src=src; break; } }
   })();
   async function exists(url){ try{ const r=await fetch(url,{method:'HEAD',cache:'no-store'}); return r.ok; }catch(e){ return false; } }
   let introEnded=false;
-  playIntro.addEventListener('click', async ()=>{
-    try{ await vIntro.play(); }catch(e){}
-  });
-  vIntro.addEventListener('playing', ()=>{ shield1.classList.add('hide'); });
-  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.click(); });
+  function startIntro(){ try{ vIntro.play().catch(()=>{}); }catch(e){} }
+  playIntro.addEventListener('click', startIntro);
+  // 讓點 video 或外框也能播放
+  document.getElementById('p1box').addEventListener('click', startIntro);
+  vIntro.addEventListener('playing', ()=>{ shield1.classList.add('hide'); hint1.style.display='none'; });
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; /* 顯示下一頁可按 */ });
   vIntro.addEventListener('loadeddata', ()=>{ /* keep poster until playing */ });
 
   // ---------- Page 2 (ascii video; sample bg color) ----------
@@ -224,9 +218,8 @@ button.btn.alt{background:var(--gold); color:#3b2a00}
 
   // buttons in final message
   document.getElementById('btnReplay').onclick = ()=>{
-    // reset all
     finalMsg.style.display='none'; shield4.classList.remove('hide'); vFinale.pause(); vFinale.currentTime=0;
-    shield1.classList.remove('hide'); vIntro.pause(); vIntro.currentTime=0; introEnded=false;
+    hint1.style.display=''; shield1.classList.remove('hide'); vIntro.pause(); vIntro.currentTime=0; introEnded=false;
     vAscii.pause(); vAscii.currentTime=0;
     show(0);
   };
