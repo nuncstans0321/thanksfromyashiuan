@@ -3,106 +3,87 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — 簡化流程 v3</title>
+<title>感謝卡 — 簡化流程 v4</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{
-  --bg: #fff8ec;
-  --paper: #fffef9;
-  --ink: #222;
-  --gold: #ffd24d;
-  --hint: #111;
-  --radius: 22px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: ui-rounded, "Noto Sans TC", system-ui, -apple-system, Segoe UI, Arial;
-  background: radial-gradient(1200px 800px at 20% 20%, #fffaf0, var(--bg));
-  color: var(--ink);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-.stage{ width:min(980px,96vw); height:min(700px,94svh); position:relative; }
-@supports not (height: 1svh){ .stage{height:min(700px,94vh);} }
-.card{ position:absolute; inset:0; background:var(--paper); border-radius: var(--radius);
-  box-shadow:0 20px 60px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.07);
-  overflow:hidden; display:grid; grid-template-rows: 1fr auto; }
-.pages{position:relative; overflow:hidden}
-.page{ position:absolute; inset:0; opacity:0; transform: translateY(10px) scale(.98);
-  transition: .45s ease; padding: clamp(12px, 3vw, 28px); display:grid; place-items:center; }
-.page.active{opacity:1; transform:none}
+:root{ --bg:#fff8ec; --paper:#fffef9; --ink:#222; --gold:#ffd24d; --radius:22px; }
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Segoe UI,Arial;
+     background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));
+     color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stage{width:min(980px,96vw);height:min(700px,94svh);position:relative}
+@supports not (height:1svh){.stage{height:min(700px,94vh)}}
+.card{position:absolute;inset:0;background:var(--paper);border-radius:var(--radius);
+      box-shadow:0 20px 60px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.07);overflow:hidden;
+      display:grid;grid-template-rows:1fr auto}
+.pages{position:relative;overflow:hidden}
+.page{position:absolute;inset:0;opacity:0;transform:translateY(10px) scale(.98);
+      transition:.45s ease;padding:clamp(12px,3vw,28px);display:grid;place-items:center}
+.page.active{opacity:1;transform:none}
 
-/* --- video box --- */
-.vbox{ position:relative; width:100%; height:100%; display:grid; place-items:center; background:#fff; border-radius:16px; overflow:hidden; }
-.vbox video, .vbox img{ position:relative; z-index:1; width:100%; height:100%; object-fit:contain; background:transparent; display:block; }
-.hint{ position:absolute; right:10px; bottom:10px; background:var(--hint); color:#fff; padding:.6rem 1rem;
-  border-radius:12px; font-weight:800; box-shadow:0 8px 20px rgba(0,0,0,.2); z-index:3; }
-.playmask{ position:absolute; inset:0; cursor:pointer; background:transparent; border:none; z-index:4; }
-.shield{ position:absolute; inset:0; background:#fff; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.03);
-  transition: opacity .35s ease; opacity:0; pointer-events:none; z-index:2; }
-.shield.hide{opacity:0; pointer-events:none}
+/* video area */
+.vbox{position:relative;width:100%;height:100%;display:grid;place-items:center;background:#fff;border-radius:16px;overflow:hidden}
+.vbox video{width:100%;height:100%;object-fit:contain;background:transparent;display:block}
+.hint{position:absolute;right:10px;bottom:10px;background:#111;color:#fff;padding:.6rem 1rem;border-radius:12px;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.2);z-index:5}
+/* 專門覆蓋信封封蠟位置的大型熱區（中間 40% x 40%） */
+.hotspot{position:absolute;left:30%;top:30%;width:40%;height:40%;z-index:6;background:transparent;cursor:pointer;border:none}
 
-/* --- ascii page bg --- */
-.p2wrap{position:relative; width:100%; height:100%; background:#111; border-radius:16px; display:grid; place-items:center}
-.p2wrap video{width:100%; height:100%; object-fit:contain; background:transparent}
+/* ascii */
+.p2wrap{position:relative;width:100%;height:100%;background:#111;border-radius:16px;display:grid;place-items:center}
+.p2wrap video{width:100%;height:100%;object-fit:contain;background:transparent}
 
-/* --- grid 4 --- */
-.grid4{display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100%}
-.badge{display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px; background:#fffdf3; text-decoration:none; color:inherit; min-height:180px}
-.badge img{width:min(42vw,200px); height:min(42vw,200px); object-fit:contain}
+/* grid 4 */
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;width:100%;height:100%}
+.badge{display:grid;place-items:center;border:1px solid #f0e6c6;border-radius:16px;background:#fffdf3;text-decoration:none;color:inherit;min-height:180px}
+.badge img{width:min(42vw,200px);height:min(42vw,200px);object-fit:contain}
 
-/* --- nav --- */
-.nav{display:flex; gap:10px; justify-content:flex-end; padding:10px}
-button.btn{appearance:none; border:none; padding:.8rem 1.1rem; border-radius:12px; background:#111; color:#fff; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.12)}
-button.btn.alt{background:var(--gold); color:#3b2a00}
-button.btn[disabled]{opacity:.5; pointer-events:none}
+/* nav */
+.nav{display:flex;gap:10px;justify-content:flex-end;padding:10px}
+button.btn{appearance:none;border:none;padding:.8rem 1.1rem;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+button.btn.alt{background:var(--gold);color:#3b2a00}
+button.btn[disabled]{opacity:.5;pointer-events:none}
 
-/* --- popup target --- */
-.layer{position:fixed; inset:0; background:rgba(0,0,0,.4); display:none; place-items:center; z-index:50}
+/* popups */
+.layer{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:50}
 .layer:target{display:grid}
-.layer .box{background:#fff; color:#222; padding:22px; border-radius:16px; width:min(92vw,720px); text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6; box-shadow:0 16px 44px rgba(0,0,0,.28)}
-.layer .ok{display:inline-block; margin-top:14px; background:#111; color:#fff; padding:.7rem 1.1rem; border-radius:12px; text-decoration:none; font-weight:800}
-.layer .bgclose{position:absolute; inset:0; content:""; display:block}
+.layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6;box-shadow:0 16px 44px rgba(0,0,0,.28)}
+.layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
+.layer .bgclose{position:absolute;inset:0;content:"";display:block}
 
-/* --- finale overlay --- */
-.final-msg{position:absolute; inset:0; display:none; place-items:center; background:rgba(255,255,255,.0)}
+/* finale overlay */
+.final-msg{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,255,255,.0)}
 .final-msg .inner{text-align:center}
-.final-msg .jp{font-weight:900; letter-spacing:.04em; font-size:clamp(28px, 5vw, 72px)}
-.final-msg .jp small{display:block; font-size:.45em; opacity:.75; margin-top:.2em}
-.final-msg .btns{margin-top:16px; display:flex; gap:10px; justify-content:center}
-.shareLayer{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:60}
+.final-msg .jp{font-weight:900;letter-spacing:.04em;font-size:clamp(28px,5vw,72px)}
+.final-msg .jp small{display:block;font-size:.45em;opacity:.75;margin-top:.2em}
+.final-msg .btns{margin-top:16px;display:flex;gap:10px;justify-content:center}
+.shareLayer{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45);z-index:60}
 .shareLayer.show{display:grid}
-.shareCard{background:#fff; padding:20px; border-radius:16px; width:min(92vw,420px); box-shadow:0 16px 44px rgba(0,0,0,.33); text-align:center}
-.shareCard .qr{display:grid; place-items:center; margin:10px auto}
-.shareCard .row{display:flex; gap:8px; justify-content:center; margin-top:8px}
-.copyNote{font-size:13px; color:#666; margin-top:6px}
+.shareCard{background:#fff;padding:20px;border-radius:16px;width:min(92vw,420px);box-shadow:0 16px 44px rgba(0,0,0,.33);text-align:center}
+.shareCard .qr{display:grid;place-items:center;margin:10px auto}
+.shareCard .row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.copyNote{font-size:13px;color:#666;margin-top:6px}
 </style>
 </head>
 <body>
 <div class="stage">
   <div class="card">
     <div class="pages">
-      <!-- Page 1: envelope_open.mp4 -->
+      <!-- p1 -->
       <section class="page active" id="p1">
         <div class="vbox" id="p1box">
-          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted></video>
-          <div class="shield" id="shield1"></div>
-          <button class="playmask" id="playIntro" aria-label="點擊播放"></button>
-          <div class="hint" id="hint1">點一下播放</div>
+          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted poster="poster.png" src="envelope_open.mp4"></video>
+          <button class="hotspot" id="hotspot1" aria-label="點信封播放"></button>
+          <div class="hint" id="hint1">點信封播放 ✉️</div>
         </div>
       </section>
-      <!-- Page 2: ascii_anim.mp4 -->
+      <!-- p2 -->
       <section class="page" id="p2">
         <div class="p2wrap" id="p2wrap">
-          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop></video>
+          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop src="ascii_anim.mp4"></video>
         </div>
       </section>
-      <!-- Page 3: four images with popups -->
+      <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4">
           <a class="badge" href="#pop1"><img id="slot1" alt="能量瓶"></a>
@@ -111,11 +92,10 @@ button.btn[disabled]{opacity:.5; pointer-events:none}
           <a class="badge" href="#pop4"><img id="slot4" alt="禮物"></a>
         </div>
       </section>
-      <!-- Page 4: finale.mp4 + thanks -->
+      <!-- p4 -->
       <section class="page" id="p4">
         <div class="vbox" id="p4box">
-          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted></video>
-          <div class="shield" id="shield4"></div>
+          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted src="finale.mp4"></video>
           <div class="final-msg" id="finalMsg">
             <div class="inner">
               <div class="jp">ありがとうございます<small>いつも応援してくれて、ほんとうに感謝です。</small></div>
@@ -159,85 +139,51 @@ button.btn[disabled]{opacity:.5; pointer-events:none}
   const pages=[...document.querySelectorAll('.page')];
   let idx=0;
   const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
-  function show(i){
-    pages[idx].classList.remove('active');
-    idx=Math.max(0,Math.min(pages.length-1,i));
-    pages[idx].classList.add('active');
-    next.textContent=(idx===pages.length-1)?'完成':'下一頁';
-    if(idx===0 && !introEnded){ next.disabled=true; } else { next.disabled=false; }
-  }
+  function show(i){ pages[idx].classList.remove('active'); idx=Math.max(0,Math.min(pages.length-1,i)); pages[idx].classList.add('active'); next.textContent=(idx===pages.length-1)?'完成':'下一頁'; if(idx===0 && !introEnded){ next.disabled=true; } else { next.disabled=false; } }
   prev.onclick=()=>show(idx-1);
   next.onclick=()=>{ if(idx===pages.length-1){ return; } show(idx+1); };
   show(0);
 
-  // ---------- Page 1 (intro video) ----------
+  /* p1 */
   const vIntro=document.getElementById('vIntro');
-  const shield1=document.getElementById('shield1');
-  const playIntro=document.getElementById('playIntro');
+  const hotspot1=document.getElementById('hotspot1');
   const hint1=document.getElementById('hint1');
-
-  // set poster & src
-  fetch('poster.png',{cache:'no-store'}).then(r=>{ if(r.ok) vIntro.setAttribute('poster','poster.png'); }).catch(()=>{});
-  (async ()=>{
-    const cand=['envelope_open.mp4','envelope_open.webm','envelope_open.gif','envelope_open.apng','envelope_open.webp','envelope_open.svg'];
-    for(const src of cand){ if(await exists(src)){ vIntro.src=src; break; } }
-  })();
-  async function exists(url){ try{ const r=await fetch(url,{method:'HEAD',cache:'no-store'}); return r.ok; }catch(e){ return false; } }
   let introEnded=false;
-  function startIntro(){ try{ vIntro.play().catch(()=>{}); }catch(e){} }
-  playIntro.addEventListener('click', startIntro);
-  // 讓點 video 或外框也能播放
-  document.getElementById('p1box').addEventListener('click', startIntro);
-  vIntro.addEventListener('playing', ()=>{ shield1.classList.add('hide'); hint1.style.display='none'; });
-  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; /* 顯示下一頁可按 */ });
-  vIntro.addEventListener('loadeddata', ()=>{ /* keep poster until playing */ });
+  function startIntro(){ vIntro.play().then(()=>{ hint1.style.display='none'; }).catch(()=>{}); }
+  hotspot1.addEventListener('click', startIntro);
+  vIntro.addEventListener('click', startIntro); // 點影片本身也可
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; }); // 開放下一頁
+  // 如果影片載不了，仍然顯示 poster.png（已寫在標籤上）
 
-  // ---------- Page 2 (ascii video; sample bg color) ----------
+  /* p2 */
   const vAscii=document.getElementById('vAscii');
   const p2wrap=document.getElementById('p2wrap');
-  (async ()=>{
-    const cand=['ascii_anim.mp4','ascii_anim.webm','ascii_anim.gif','ascii_anim.apng','ascii_anim.webp','ascii_anim.svg'];
-    for(const src of cand){ if(await exists(src)){ vAscii.src=src; break; } }
-  })();
-  vAscii.addEventListener('loadeddata', ()=>{ try{ vAscii.play().catch(()=>{}); }catch(e){} sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }); });
-  async function sampleBg(video){ try{ if(!video.videoWidth) return null; const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth)); const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true}); c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h); const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0; for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;} r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n); return `rgb(${r},${g},${b})`; }catch(e){ return null; } }
+  vAscii.addEventListener('loadeddata', ()=>{ try{ vAscii.play().catch(()=>{});}catch(e){} setTimeout(()=>sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 60); });
+  function sampleBg(video){ try{ if(!video.videoWidth) return null; const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth)); const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true}); c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h); const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0; for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;} r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n); return `rgb(${r},${g},${b})`; }catch(e){ return null; } }
 
-  // ---------- Page 3: load four images (slot1-4.*) ----------
+  /* p3 images */
   const exts=['png','jpg','jpeg','webp','svg'];
-  function loadImg(id,bases){ const el=document.getElementById(id); (function tryNextBase(bi){ if(bi>=bases.length){ el.alt=''; return; } (function tryExt(i){ if(i>=exts.length){ tryNextBase(bi+1); return; } const url=bases[bi]+'.'+exts[i]; const t=new Image(); t.onload=()=>el.src=url; t.onerror=()=>tryExt(i+1); t.src=url; })(0); })(0); }
+  function loadImg(id,bases){ const el=document.getElementById(id); (function tryNextBase(bi){ if(bi>=bases.length){ return; } (function tryExt(i){ if(i>=exts.length){ tryNextBase(bi+1); return; } const url=bases[bi]+'.'+exts[i]; const t=new Image(); t.onload=()=>el.src=url; t.onerror=()=>tryExt(i+1); t.src=url; })(0); })(0); }
   loadImg('slot1',['slot1','pic1','opt1']); loadImg('slot2',['slot2','pic2','opt2']); loadImg('slot3',['slot3','pic3','opt3']); loadImg('slot4',['slot4','pic4','opt4']);
 
-  // ---------- Page 4 (finale) ----------
+  /* p4 finale */
   const vFinale=document.getElementById('vFinale');
-  const shield4=document.getElementById('shield4');
   const finalMsg=document.getElementById('finalMsg');
-  (async ()=>{ const cand=['finale.mp4','finale.webm','finale.gif','finale.apng','finale.webp','finale.svg']; for(const src of cand){ if(await exists(src)){ vFinale.src=src; break; } } })();
-  vFinale.addEventListener('playing', ()=>{ shield4.classList.add('hide'); });
-  vFinale.addEventListener('loadeddata', ()=>{ try{ vFinale.play().catch(()=>{}); }catch(e){} });
+  vFinale.addEventListener('loadeddata', ()=>{ try{ vFinale.play().catch(()=>{});}catch(e){} });
   vFinale.addEventListener('ended', ()=>{ finalMsg.style.display='grid'; });
 
-  // buttons in final message
-  document.getElementById('btnReplay').onclick = ()=>{
-    finalMsg.style.display='none'; shield4.classList.remove('hide'); vFinale.pause(); vFinale.currentTime=0;
-    hint1.style.display=''; shield1.classList.remove('hide'); vIntro.pause(); vIntro.currentTime=0; introEnded=false;
+  document.getElementById('btnReplay').onclick=()=>{
+    finalMsg.style.display='none'; vFinale.pause(); vFinale.currentTime=0;
     vAscii.pause(); vAscii.currentTime=0;
-    show(0);
+    vIntro.pause(); vIntro.currentTime=0; hint1.style.display=''; introEnded=false; show(0);
   };
 
-  // share modal + QR
+  /* share */
   const shareLayer=document.getElementById('shareLayer');
   document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
   document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
-  document.getElementById('copyUrl').onclick=async ()=>{
-    const url=location.href.split('#')[0];
-    try{ await navigator.clipboard.writeText(url); document.getElementById('copyNote').textContent='已複製網址 ✔'; }
-    catch(e){ document.getElementById('copyNote').textContent=url; }
-  };
-  function buildQR(){
-    const box=document.getElementById('qr'); box.innerHTML='';
-    if(window.QRCode){ new QRCode(box, {text: location.href.split('#')[0], width: 220, height: 220}); }
-    else { box.textContent = location.href.split('#')[0]; }
-  }
+  document.getElementById('copyUrl').onclick=async ()=>{ const url=location.href.split('#')[0]; try{ await navigator.clipboard.writeText(url); document.getElementById('copyNote').textContent='已複製網址 ✔'; } catch(e){ document.getElementById('copyNote').textContent=url; } };
+  function buildQR(){ const box=document.getElementById('qr'); box.innerHTML=''; if(window.QRCode){ new QRCode(box, {text: location.href.split('#')[0], width:220, height:220}); } else { box.textContent=location.href.split('#')[0]; } }
 })();
 </script>
 </body>
