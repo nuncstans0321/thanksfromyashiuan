@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.3.6</title>
+<title>感謝卡 — v9.3.7</title>
 <style>
 :root{--r:22px;--card:#f2f3f5;--ink:#1f2328}
 *{box-sizing:border-box}html,body{height:100%}
@@ -13,14 +13,15 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 #p3{display:block;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px}
 .vbox{position:relative;width:100%;height:100%;background:#000;border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center}
 .vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-/* 下一頁：p1/p2/p3 永遠顯示；p4 無此按鈕 */
-.next{position:fixed;right:calc(2vw + 8px);bottom:calc(2vh + 8px);padding:.7rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;z-index:60;display:inline-block}
+/* Next：預設隱藏；用 .show 顯示（p2/p3 預設加上 .show） */
+.next{position:fixed;right:calc(2vw + 8px);bottom:calc(2vh + 8px);padding:.7rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;z-index:60;display:none}
+.next.show{display:inline-block}
 /* ===== 四格頁 ===== */
 .gridArea{max-width:1024px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .banner{text-align:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:10px;font-weight:900}
 .grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px}
 @media (max-width:560px){.grid4{grid-template-columns:1fr}}
-.badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:10px;position:relative;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);outline:0}
+.badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:10px;position:relative;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);outline:0;touch-action:manipulation}
 .badge:focus{box-shadow:0 0 0 3px #3b82f6aa}
 .badge img{width:100%;display:block;border-radius:10px}
 /* 初始只顯示圖片；點擊後才顯示文案與彩蛋 */
@@ -54,15 +55,15 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 </style>
 </head><body>
 <div class="stage"><div class="card">
-  <!-- p1 -->
+  <!-- p1：播放完才顯示下一頁 -->
   <section class="page active" id="p1">
     <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video></div>
     <button class="next" id="n1">下一頁</button>
   </section>
-  <!-- p2：loop，且始終有「下一頁」 -->
+  <!-- p2：loop，且預設顯示下一頁 -->
   <section class="page" id="p2">
     <div class="vbox"><div class="p2ribbon" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f2c94c;border-radius:12px;padding:6px 10px;font-weight:800;z-index:2">給博皓學長 ～ by 62期學員亞璇</div><video id="vAscii" playsinline webkit-playsinline muted preload="auto" loop><source id="sAscii" src="ascii_anim.mp4" type="video/mp4"></video></div>
-    <button class="next" id="n2">下一頁</button>
+    <button class="next show" id="n2">下一頁</button>
   </section>
   <!-- p3 四格 -->
   <section class="page" id="p3">
@@ -90,7 +91,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
         </div>
       </div>
     </div>
-    <button class="next" id="n3">下一頁</button>
+    <button class="next show" id="n3">下一頁</button>
   </section>
   <!-- p4 -->
   <section class="page" id="p4">
@@ -122,11 +123,12 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   const v1=$("#vIntro"), v2=$("#vAscii"), v3=$("#vFinale");
   const overlay=$("#overlay"), again=$("#againBtn"), share=$("#shareBtn");
 
-  // p1
+  // p1：播放完才顯示下一頁
   v1.play().catch(()=>{ v1.setAttribute("controls",""); });
+  v1.addEventListener("ended", ()=>{ n1.classList.add("show"); });
   n1.addEventListener("click", ()=>{ show(1); v2.play().catch(()=>{ v2.setAttribute("controls",""); }); });
 
-  // p2（loop + 立即可下一頁）
+  // p2
   n2.addEventListener("click", ()=> show(2));
 
   // p3 → p4
@@ -137,6 +139,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   again.addEventListener("click", ()=>{
     overlay.style.display="none";
     show(0);
+    n1.classList.remove("show");
     v1.currentTime=0; v1.play().catch(()=>{ v1.setAttribute("controls",""); });
   });
   share.addEventListener("click", async ()=>{
@@ -152,9 +155,14 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 
   // utils
   function toast(msg){ t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 1200); }
-  const on=(el,fn)=>["click","touchstart","keydown"].forEach(evt=>{
-    el.addEventListener(evt,(e)=>{ if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return; e.preventDefault(); fn(e); },{passive:false});
-  });
+  const on=(el,fn)=>{
+    ["pointerup","click","keydown"].forEach(evt=>{
+      el.addEventListener(evt,(e)=>{
+        if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return;
+        fn(e);
+      });
+    });
+  };
   const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
   const showMetaOnce = (b)=>{ if(!b.classList.contains("show")) b.classList.add("show"); };
 
