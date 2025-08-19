@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.3.5</title>
+<title>感謝卡 — v9.3.6</title>
 <style>
 :root{--r:22px;--card:#f2f3f5;--ink:#1f2328}
 *{box-sizing:border-box}html,body{height:100%}
@@ -13,9 +13,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 #p3{display:block;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px}
 .vbox{position:relative;width:100%;height:100%;background:#000;border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center}
 .vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-/* 下一頁：預設隱藏，該頁條件達成才顯示 */
-.next{position:fixed;right:calc(2vw + 8px);bottom:calc(2vh + 8px);padding:.7rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;z-index:60;display:none}
-.next.show{display:inline-block}
+/* 下一頁：p1/p2/p3 永遠顯示；p4 無此按鈕 */
+.next{position:fixed;right:calc(2vw + 8px);bottom:calc(2vh + 8px);padding:.7rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;z-index:60;display:inline-block}
 /* ===== 四格頁 ===== */
 .gridArea{max-width:1024px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
 .banner{text-align:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:10px;font-weight:900}
@@ -47,7 +46,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
 .spark{position:fixed;font-size:18px;animation:rise .65s ease-out forwards;pointer-events:none;z-index:65}
 @keyframes rise{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-26px) scale(1.2);opacity:0}}
-/* p4 overlay */
 #overlay{position:absolute;inset:0;display:none;place-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.5),rgba(0,0,0,.35));z-index:40}
 .overlay-card{background:#fff;border-radius:16px;padding:18px 22px;box-shadow:0 14px 40px rgba(0,0,0,.35);text-align:center}
 .overlay-actions{display:flex;gap:10px;justify-content:center;margin-top:12px}
@@ -56,12 +54,12 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 </style>
 </head><body>
 <div class="stage"><div class="card">
-  <!-- p1：播完才顯示下一頁 -->
+  <!-- p1 -->
   <section class="page active" id="p1">
     <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video></div>
     <button class="next" id="n1">下一頁</button>
   </section>
-  <!-- p2：loop，但僅第一次播放結束時顯示按鈕 -->
+  <!-- p2：loop，且始終有「下一頁」 -->
   <section class="page" id="p2">
     <div class="vbox"><div class="p2ribbon" style="position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f2c94c;border-radius:12px;padding:6px 10px;font-weight:800;z-index:2">給博皓學長 ～ by 62期學員亞璇</div><video id="vAscii" playsinline webkit-playsinline muted preload="auto" loop><source id="sAscii" src="ascii_anim.mp4" type="video/mp4"></video></div>
     <button class="next" id="n2">下一頁</button>
@@ -92,7 +90,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
         </div>
       </div>
     </div>
-    <button class="next show" id="n3">下一頁</button>
+    <button class="next" id="n3">下一頁</button>
   </section>
   <!-- p4 -->
   <section class="page" id="p4">
@@ -124,19 +122,14 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   const v1=$("#vIntro"), v2=$("#vAscii"), v3=$("#vFinale");
   const overlay=$("#overlay"), again=$("#againBtn"), share=$("#shareBtn");
 
-  // p1：播放結束才顯示
+  // p1
   v1.play().catch(()=>{ v1.setAttribute("controls",""); });
-  v1.addEventListener("ended", ()=> n1.classList.add("show"));
   n1.addEventListener("click", ()=>{ show(1); v2.play().catch(()=>{ v2.setAttribute("controls",""); }); });
 
-  // p2：loop，但只在第一次 ended 顯示按鈕
-  let asciiFirstEnded=false;
-  v2.addEventListener("ended", ()=>{
-    if(!asciiFirstEnded){ asciiFirstEnded=true; n2.classList.add("show"); }
-  });
+  // p2（loop + 立即可下一頁）
   n2.addEventListener("click", ()=> show(2));
 
-  // p3：下一頁固定顯示
+  // p3 → p4
   n3.addEventListener("click", ()=>{ show(3); v3.play().catch(()=>{ v3.setAttribute("controls",""); }); });
 
   // p4：影片結束 → 顯示 overlay（含再一次 / 分享）
@@ -144,7 +137,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   again.addEventListener("click", ()=>{
     overlay.style.display="none";
     show(0);
-    n1.classList.remove("show");
     v1.currentTime=0; v1.play().catch(()=>{ v1.setAttribute("controls",""); });
   });
   share.addEventListener("click", async ()=>{
@@ -166,7 +158,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
   const showMetaOnce = (b)=>{ if(!b.classList.contains("show")) b.classList.add("show"); };
 
-  // 首次點擊的引導提示（任一卡片首次點擊後提示「再點幾下看看」一次）
+  // 首次點擊的引導提示
   let hinted=false; function hint(){ if(!hinted){ hinted=true; toast("再連點幾下看看 ✨ 會有滿格 / 彩虹 / 升級 / 小紙條喔！"); } }
 
   // A 充電
