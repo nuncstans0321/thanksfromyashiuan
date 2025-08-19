@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — Autoplay Flow v6 (Hybrid Modal)</title>
+<title>感謝卡 — Autoplay Flow v7</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -60,7 +60,9 @@ body{
 .grid4{ display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100% }
 .badge{ display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px;
   background:#fffdf3; text-decoration:none; color:inherit; min-height:180px; cursor:pointer;
-  box-shadow: 0 6px 18px rgba(0,0,0,.06); transition: transform .12s ease; }
+  box-shadow: 0 6px 18px rgba(0,0,0,.06); transition: transform .12s ease;
+  position:relative; z-index:1; touch-action:manipulation;
+}
 .badge:hover{ transform: translateY(-2px) }
 .badge img{ width:min(42vw,220px); height:min(42vw,220px); object-fit:contain; pointer-events:none }
 
@@ -85,8 +87,9 @@ body{
 .final-msg .btns{ margin-top:16px; display:flex; gap:10px; justify-content:center }
 .final-msg .btns .pillBtn{ animation:none }
 
-/* CSS fallback layers (for no-JS) */
-.layer{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; place-items:center; z-index:7000 }
+/* Pop layers */
+.layer{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.5);
+  z-index:999999; /* 超高，確保蓋過一切 */ }
 .layer:target{ display:grid }
 .layer .panel{ background:#fff; color:#222; padding:24px; border-radius:18px; width:min(92vw,720px);
   text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6; border:2px solid var(--gold2);
@@ -120,10 +123,10 @@ body{
       <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4" id="grid4">
-          <a class="badge" href="#m1" data-msg="工作辛苦了，加油 💪✨"><img id="slot1" alt="能量瓶"></a>
-          <a class="badge" href="#m2" data-msg="工作一切順利～ 🌈"><img id="slot2" alt="好天氣"></a>
-          <a class="badge" href="#m3" data-msg="希望今天沒有突發狀況，是順心好日子！🍀"><img id="slot3" alt="花束"></a>
-          <a class="badge" href="#m4" data-msg="呈上真心的萬分感謝 ✨⭐️❤️"><img id="slot4" alt="禮物"></a>
+          <a class="badge" href="#m1" data-msg="工作辛苦了，加油 💪✨" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot1" alt="能量瓶"></a>
+          <a class="badge" href="#m2" data-msg="工作一切順利～ 🌈" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot2" alt="好天氣"></a>
+          <a class="badge" href="#m3" data-msg="希望今天沒有突發狀況，是順心好日子！🍀" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot3" alt="花束"></a>
+          <a class="badge" href="#m4" data-msg="呈上真心的萬分感謝 ✨⭐️❤️" onclick="return showMsg(this)" onkeydown="return keyMsg(event,this)" tabindex="0"><img id="slot4" alt="禮物"></a>
         </div>
         <button class="pillBtn nextFab" id="nextFab3"><span class="ico">⚡️</span><span>下一頁</span></button>
       </section>
@@ -148,14 +151,14 @@ body{
   </div>
 </div>
 
-<!-- CSS fallback popups (no-JS) -->
+<!-- CSS :target fallbacks -->
 <section id="m1" class="layer"><div class="panel">工作辛苦了，加油 💪✨<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
 <section id="m2" class="layer"><div class="panel">工作一切順利～ 🌈<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
 <section id="m3" class="layer"><div class="panel">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
 <section id="m4" class="layer"><div class="panel">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></section>
 
-<!-- JS dynamic modal (progressive enhancement) -->
-<div class="layer" id="dyn" style="z-index:9000"><div class="panel"><div id="dynText"></div><a class="pillBtn" href="#p3"><span class="ico">✨</span><span>pika~</span></a></div></div>
+<!-- JS modal node -->
+<div class="layer" id="dyn" style="display:none"><div class="panel"><div id="dynText"></div><a class="pillBtn" href="#p3" onclick="dyn.style.display='none'"><span class="ico">✨</span><span>pika~</span></a></div></div>
 
 <script>
 (function(){
@@ -213,13 +216,12 @@ body{
     introEnded=false; show(0); tryAutoStart();
   };
 
-  // Share (lazy)
+  // Share lazy
   let shareLayer=null;
   document.getElementById('btnShare').onclick=()=>{
     if(!shareLayer){
       shareLayer=document.createElement('div');
-      shareLayer.className='layer';
-      shareLayer.style.display='grid';
+      shareLayer.className='layer'; shareLayer.style.display='grid';
       shareLayer.innerHTML=`<div class="panel"><h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
         <div id="qr" style="display:grid;place-items:center;margin:10px auto"></div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
@@ -244,21 +246,25 @@ body{
     }else{ shareLayer.style.display='grid'; }
   };
 
-  // Hybrid modal for 4 images: JS enhancement over anchor fallbacks
-  const grid=document.getElementById('grid4');
-  const dyn=document.getElementById('dyn');
-  const dynText=document.getElementById('dynText');
-  function onBadge(ev){
-    const a = ev.target.closest && ev.target.closest('a.badge');
-    if(!a) return;
-    // Use JS modal instead of :target
-    ev.preventDefault();
-    dynText.textContent = a.getAttribute('data-msg') || 'pika~';
-    dyn.style.display='grid';
-  }
-  grid.addEventListener('click', onBadge);
-  grid.addEventListener('touchend', onBadge, {passive:false});
-  dyn.addEventListener('click', (e)=>{ if(e.target===dyn){ dyn.style.display='none'; } });
+  // expose showMsg for inline onclick
+  window.showMsg = function(el){
+    try{
+      const dyn = document.getElementById('dyn');
+      const dynText = document.getElementById('dynText');
+      dynText.textContent = el.getAttribute('data-msg') || 'pika~';
+      dyn.style.display = 'grid';
+      return false; // stop default anchor
+    }catch(e){
+      return true; // fallback to :target
+    }
+  };
+  window.keyMsg = function(ev,el){
+    if(ev.key==='Enter' || ev.key===' '){
+      ev.preventDefault();
+      return showMsg(el);
+    }
+    return true;
+  };
 
   function ensurePlay(video){ video.play().catch(()=>{ video.controls=true; }); }
   async function sampleBg(video){
