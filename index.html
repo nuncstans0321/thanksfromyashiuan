@@ -1,8 +1,8 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.3</title>
+<title>感謝卡 — v9.3.1</title>
 <style>
-:root{--r:22px;--bg:#0e0e10;--card:#f2f3f5;--ink:#1f2328}
+:root{--r:22px;--card:#f2f3f5;--ink:#1f2328}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:#0e0e10;color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .stage{width:min(980px,96vw);height:min(700px,94svh)}@supports not (height:1svh){.stage{height:min(700px,94vh)}}
@@ -12,7 +12,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 #p1,#p2,#p4{padding:0}
 .vbox{position:relative;width:100%;height:100%;background:#000;border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center}
 .vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-.next{position:absolute;right:12px;bottom:12px;padding:.6rem 1rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:700;display:none}
+.next{position:absolute;right:12px;bottom:12px;padding:.66rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;display:none;z-index:30}
 .next.show{display:inline-block}
 .p2ribbon{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f2c94c;border-radius:12px;padding:6px 10px;font-weight:800;z-index:2}
 .gridArea{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;padding:16px}
@@ -44,7 +44,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 </head><body>
 <div class="stage"><div class="card">
   <section class="page active" id="p1">
-    <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video><button class="next" id="n1">下一頁</button></div>
+    <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video></div>
+    <button class="next" id="n1">下一頁</button>
   </section>
   <section class="page" id="p2">
     <div class="vbox"><div class="p2ribbon">給博皓學長 ～ by 62期學員亞璇</div><video id="vAscii" playsinline webkit-playsinline muted preload="auto" loop><source id="sAscii" src="ascii_anim.mp4" type="video/mp4"></video></div>
@@ -69,24 +70,45 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 <div class="toast" id="toast"></div>
 <script>
 (function(){
-  const $=s=>document.querySelector(s),t=$("#toast");
-  const cb=Date.now().toString(36);["#sIntro","#sAscii","#sFinale"].forEach(sel=>{const el=$(sel);if(el){el.src=el.getAttribute("src")+"?v="+cb;}});
-  const pages=[...document.querySelectorAll(".page")];let i=0;const show=n=>{pages[i].classList.remove("active");i=Math.max(0,Math.min(pages.length-1,n));pages[i].classList.add("active");};
-  const n1=$("#n1"),n2=$("#n2"),n3=$("#n3");const v1=$("#vIntro"),v2=$("#vAscii"),v3=$("#vFinale");
-  v1.addEventListener("ended",()=>{n1.classList.add("show")});n1.onclick=()=>show(1);n2.onclick=()=>show(2);n3.onclick=()=>show(3);
-  v1.play().catch(()=>{n1.classList.add("show")});
-  const ensure=v=>v.play().catch(()=>{v.controls=true});pages[1].addEventListener("transitionend",()=>ensure(v2),{once:true});pages[3].addEventListener("transitionend",()=>ensure(v3),{once:true});
-  v3.addEventListener("ended",()=>{$("#fmsg").style.display="grid"});
+  const $=s=>document.querySelector(s), t=$("#toast");
+  const bust=Date.now().toString(36); ["#sIntro","#sAscii","#sFinale"].forEach(sel=>{ const el=$(sel); if(el) el.src = el.getAttribute("src")+"?v="+bust; });
 
-  const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}}
-  // A 充電
-  (function(){const b=$("#b1"),fill=$("#fill"),full=$("#full");let c=0,lock=false;b.addEventListener("click",()=>{if(lock)return;lock=true;const bar=b.querySelector(".pbar");bar.style.display="block";requestAnimationFrame(()=>fill.style.width="100%");setTimeout(()=>{fill.style.width="0";bar.style.display="none";lock=false;},1100);c++;if(c%3===0){full.style.display="inline-block";burst(b,12);t.textContent="已補滿，出發吧！";t.classList.add("show");setTimeout(()=>{t.classList.remove("show");full.style.display="none"},1000);}})})();
-  // B 天氣
-  (function(){const b=$("#b2"),face=$("#wface"),stamp=$("#wstamp");const s=["🌥️","☀️","🌈"];let k=0;b.addEventListener("click",()=>{k=(k+1)%s.length;face.textContent=s[k];stamp.style.opacity=1;stamp.style.transform="scale(1)";setTimeout(()=>{stamp.style.opacity=0;stamp.style.transform="scale(.9)"},850);if(s[k]==="🌈")burst(b,12)})})();
-  // C 花束
-  (function(){const b=$("#b3"),face=$("#qface"),shield=$("#qshield");const v=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}];let click=0,idx=-1;b.addEventListener("click",()=>{click++;if(click%3===0){idx=(idx+1)%v.length;face.textContent=v[idx].e;shield.style.opacity=1;shield.style.transform="translateY(0)";t.textContent="花束升級："+v[idx].l;t.classList.add("show");burst(b,10);setTimeout(()=>{t.classList.remove("show");shield.style.opacity=0;shield.style.transform="translateY(6px)"},900)}})})();
-  // D 禮物
-  (function(){const b=$("#b4"),box=$("#gbox"),note=$("#gnote");let opened=false,showed=false;b.addEventListener("click",()=>{opened=!opened;box.classList.toggle("open",opened);if(opened){burst(b,14)}else if(!showed){showed=true;note.style.opacity=1;note.style.top="-64px";setTimeout(()=>{note.style.opacity=0;note.style.top="-50px"},600)}})})();
+  const pages=[...document.querySelectorAll(".page")]; let idx=0;
+  const show=n=>{ pages[idx].classList.remove("active"); idx=Math.max(0,Math.min(pages.length-1,n)); pages[idx].classList.add("active"); };
+
+  const n1=$("#n1"), n2=$("#n2"), n3=$("#n3");
+  const v1=$("#vIntro"), v2=$("#vAscii"), v3=$("#vFinale");
+
+  v1.play().catch(()=>{ n1.classList.add("show"); });
+  v1.addEventListener("ended", ()=>{ n1.classList.add("show"); });
+
+  const ensure=v=>v.play().catch(()=>{ v.controls=true; });
+
+  n1.addEventListener("click", ()=>{ show(1); setTimeout(()=>ensure(v2), 120); });
+  n2.addEventListener("click", ()=>{ show(2); });
+  n3.addEventListener("click", ()=>{ show(3); setTimeout(()=>ensure(v3), 120); });
+
+  v3.addEventListener("ended", ()=>{ $("#fmsg").style.display="grid"; });
+
+  // ===== 四格彩蛋 =====
+  (function(){ const b=$("#b1"), fill=$("#fill"), full=$("#full"); let clicks=0, lock=false;
+    b.addEventListener("click", ()=>{
+      if(lock) return; lock=true;
+      const bar=b.querySelector(".pbar");
+      bar.style.display="block"; requestAnimationFrame(()=> fill.style.width="100%");
+      setTimeout(()=>{ fill.style.width="0"; bar.style.display="none"; lock=false; }, 1100);
+      clicks++; if(clicks%3===0){ full.style.display="inline-block"; t.textContent="已補滿，出發吧！"; t.classList.add("show"); setTimeout(()=>{ t.classList.remove("show"); full.style.display="none"; }, 1000); }
+    });
+  })();
+  (function(){ const b=$("#b2"), face=$("#wface"), stamp=$("#wstamp"); const S=["🌥️","☀️","🌈"]; let i=0;
+    b.addEventListener("click", ()=>{ i=(i+1)%S.length; face.textContent=S[i]; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 850); });
+  })();
+  (function(){ const b=$("#b3"), face=$("#qface"), shield=$("#qshield"); const V=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}]; let k=-1, c=0;
+    b.addEventListener("click", ()=>{ c++; if(c%3===0){ k=(k+1)%V.length; face.textContent=V[k].e; shield.style.opacity=1; shield.style.transform="translateY(0)"; t.textContent="花束升級："+V[k].l; t.classList.add("show"); setTimeout(()=>{ t.classList.remove("show"); shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 900); } });
+  })();
+  (function(){ const b=$("#b4"), box=$("#gbox"), note=$("#gnote"); let opened=false, shown=false;
+    b.addEventListener("click", ()=>{ opened=!opened; box.classList.toggle("open", opened); if(!opened && !shown){ shown=true; note.style.opacity=1; note.style.top="-64px"; setTimeout(()=>{ note.style.opacity=0; note.style.top="-50px"; }, 600); } });
+  })();
 })();
 </script>
 </body></html>
