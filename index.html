@@ -3,62 +3,124 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — Autoplay Flow</title>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<title>感謝卡 — Autoplay Flow v2 (Fixes)</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{ --bg:#fff8ec; --paper:#fffef9; --ink:#222; --gold:#ffd24d; --radius:22px; }
+:root{
+  --bg:#fff8ec; --paper:#fffef9; --ink:#222;
+  --gold1:#ffe27a; --gold2:#ffcc4d; --goldText:#3b2a00;
+  --btnDark:#111; --btnLight:#fff;
+  --radius:22px;
+}
 *{box-sizing:border-box} html,body{height:100%}
-body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Segoe UI,Arial;
-     background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));
-     color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
-.stage{width:min(980px,96vw);height:min(700px,94svh);position:relative}
-@supports not (height:1svh){.stage{height:min(700px,94vh)}}
-.card{position:absolute;inset:0;background:var(--paper);border-radius:var(--radius);
-      box-shadow:0 20px 60px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.07);overflow:hidden;
-      display:grid;grid-template-rows:1fr auto}
-.pages{position:relative;overflow:hidden}
-.page{position:absolute;inset:0;opacity:0;transform:translateY(10px) scale(.98);
-      transition:.45s ease;padding:clamp(12px,3vw,28px);display:grid;place-items:center}
-.page.active{opacity:1;transform:none}
-/* video boxes */
-.vbox{position:relative;width:100%;height:100%;display:grid;place-items:center;background:#fff;border-radius:16px;overflow:hidden}
-.vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-.playBtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;border:none;border-radius:999px;
-         background:#111;color:#fff;padding:14px 20px;font-weight:800;font-size:18px;
-         box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;display:none}
-.playBtn.show{display:block}
-/* ascii */
-.p2wrap{position:relative;width:100%;height:100%;background:#111;border-radius:16px;display:grid;place-items:center}
-.p2wrap video{width:100%;height:100%;object-fit:contain;background:transparent}
-/* grid 4 */
-.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;width:100%;height:100%}
-.badge{display:grid;place-items:center;border:1px solid #f0e6c6;border-radius:16px;background:#fffdf3;text-decoration:none;color:inherit;min-height:180px}
-.badge img{width:min(42vw,200px);height:min(42vw,200px);object-fit:contain}
-/* nav */
-.nav{display:flex;gap:10px;justify-content:flex-end;padding:10px}
-button.btn{appearance:none;border:none;padding:.85rem 1.15rem;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.12)}
-button.btn.alt{background:var(--gold);color:#3b2a00}
-#btnPrev{display:none} /* 需求不需要上一頁 */
-/* popups */
-.layer{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:50}
-.layer:target{display:grid}
-.layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6;box-shadow:0 16px 44px rgba(0,0,0,.28)}
-.layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
-.layer .bgclose{position:absolute;inset:0;content:"";display:block}
-/* finale overlay */
-.final-msg{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,255,255,.0)}
-.final-msg .inner{text-align:center}
-.final-msg .jp{font-weight:900;letter-spacing:.04em;font-size:clamp(28px,5vw,72px)}
-.final-msg .jp small{display:block; font-size:.45em; opacity:.75; margin-top:.2em}
-.final-msg .btns{margin-top:16px;display:flex;gap:10px;justify-content:center}
-/* share */
-.shareLayer{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45);z-index:60}
-.shareLayer.show{display:grid}
-.shareCard{background:#fff;padding:20px;border-radius:16px;width:min(92vw,420px);box-shadow:0 16px 44px rgba(0,0,0,.33);text-align:center}
-.shareCard .qr{display:grid;place-items:center;margin:10px auto}
-.shareCard .row{display:flex;gap:8px;justify-content:center;margin-top:8px}
-.copyNote{font-size:13px;color:#666;margin-top:6px}
+body{
+  margin:0;
+  font-family: ui-rounded, "Noto Sans TC", system-ui, -apple-system, Segoe UI, Arial;
+  background: radial-gradient(1200px 800px at 20% 20%, #fffaf0, var(--bg));
+  color: var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.stage{ width:min(980px,96vw); height:min(700px,94svh); position:relative; }
+@supports not (height: 1svh){ .stage{height:min(700px,94vh);} }
+.card{
+  position:absolute; inset:0; background:var(--paper); border-radius: var(--radius);
+  box-shadow:0 20px 60px rgba(0,0,0,.14), 0 6px 18px rgba(0,0,0,.07);
+  overflow:hidden; display:grid; grid-template-rows: 1fr;
+}
+.pages{position:relative; overflow:hidden}
+.page{
+  position:absolute; inset:0; opacity:0; transform: translateY(10px) scale(.98);
+  transition: .45s ease; padding: clamp(12px, 3vw, 28px); display:grid; place-items:center;
+}
+.page.active{opacity:1; transform:none}
+
+/* --- video box: use flex-fit to avoid crop issues --- */
+.vbox{ position:relative; width:100%; height:100%; background:#000; border-radius:16px; overflow:hidden;
+       display:flex; align-items:center; justify-content:center; }
+.vbox video{
+  max-width:100%; max-height:100%;
+  width:auto; height:auto;
+  background:transparent; display:block;
+}
+
+/* --- Center Play fallback --- */
+.playBtn{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  z-index:10; border:none; border-radius:999px;
+  background: linear-gradient(180deg, var(--gold1), var(--gold2));
+  color: var(--goldText); padding:16px 22px; font-weight:900; font-size:18px;
+  box-shadow:0 12px 28px rgba(0,0,0,.25); cursor:pointer; display:none;
+}
+.playBtn.show{ display:block }
+.playBtn .tri{ display:inline-block; width:0; height:0; border-left:12px solid var(--goldText); border-top:8px solid transparent; border-bottom:8px solid transparent; margin-right:8px; }
+
+/* --- P2 ascii page bg --- */
+.p2wrap{position:relative; width:100%; height:100%; background:#111; border-radius:16px; display:flex; align-items:center; justify-content:center}
+.p2wrap video{ max-width:100%; max-height:100%; width:auto; height:auto; background:transparent; display:block; }
+
+/* --- Grid 4 --- */
+.grid4{ display:grid; grid-template-columns:repeat(2, minmax(160px, 1fr)); gap:14px; width:100%; height:100% }
+.badge{
+  display:grid; place-items:center; border:1px solid #f0e6c6; border-radius:16px;
+  background:#fffdf3; text-decoration:none; color:inherit; min-height:180px; cursor:pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+.badge img{ width:min(42vw,220px); height:min(42vw,220px); object-fit:contain }
+
+/* --- Floating Next FAB (design-consistent) --- */
+.nextFab{
+  position:absolute; right:18px; bottom:18px; z-index:20;
+  display:none; align-items:center; gap:.6rem;
+  background: linear-gradient(180deg, var(--gold1), var(--gold2));
+  color: var(--goldText);
+  border:none; border-radius:999px; padding:.9rem 1.15rem; font-weight:900;
+  box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer;
+}
+.nextFab.show{ display:flex }
+.nextFab .chev{ width:8px; height:8px; border-right:3px solid var(--goldText); border-bottom:3px solid var(--goldText); transform:rotate(-45deg) translateY(-1px); display:inline-block }
+
+/* --- Popups (z-index very high to ensure visibility) --- */
+.layer{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; place-items:center; z-index:9999 }
+.layer:target{ display:grid }
+.layer .box{
+  background:#fff; color:#222; padding:24px; border-radius:18px;
+  width:min(92vw,720px); text-align:center; font-size:clamp(18px,4vw,24px); line-height:1.6;
+  box-shadow:0 22px 60px rgba(0,0,0,.35)
+}
+.layer .ok{ display:inline-block; margin-top:16px; background:#111; color:#fff; padding:.75rem 1.2rem; border-radius:12px; text-decoration:none; font-weight:900 }
+.layer .bgclose{ position:absolute; inset:0; content:""; display:block }
+
+/* --- Finale overlay text: strong readability --- */
+.final-msg{ position:absolute; inset:0; display:none; place-items:center; background:rgba(0,0,0,0) }
+.final-msg .inner{ text-align:center; padding:10px 14px; border-radius:16px;
+  background: linear-gradient( to bottom, rgba(0,0,0,.55), rgba(0,0,0,.25) );
+  box-shadow: 0 18px 44px rgba(0,0,0,.35);
+}
+.final-msg .jp{
+  color:#fff; font-weight:900; letter-spacing:.04em; font-size:clamp(28px,5vw,72px);
+  text-shadow:
+    0 2px 8px rgba(0,0,0,.6),
+    0 0 2px rgba(0,0,0,.9),
+    0 0 10px rgba(0,0,0,.7);
+}
+.final-msg .jp small{ display:block; font-size:.45em; opacity:.85; margin-top:.2em }
+.final-msg .btns{ margin-top:16px; display:flex; gap:10px; justify-content:center }
+.btn{
+  appearance:none; border:none; padding:.9rem 1.1rem; border-radius:12px; font-weight:900; cursor:pointer;
+  box-shadow:0 12px 28px rgba(0,0,0,.22);
+}
+.btn.alt{ background: linear-gradient(180deg, var(--gold1), var(--gold2)); color: var(--goldText) }
+.btn.dark{ background:#111; color:#fff }
+
+/* --- Share modal --- */
+.shareLayer{ position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.45); z-index:60 }
+.shareLayer.show{ display:grid }
+.shareCard{ background:#fff; padding:20px; border-radius:16px; width:min(92vw,420px); box-shadow:0 16px 44px rgba(0,0,0,.33); text-align:center }
+.shareCard .qr{ display:grid; place-items:center; margin:10px auto }
+.shareCard .row{ display:flex; gap:8px; justify-content:center; margin-top:8px }
+.copyNote{ font-size:13px; color:#666; margin-top:6px }
 </style>
 </head>
 <body>
@@ -71,8 +133,9 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
           <video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png">
             <source id="sIntro" src="envelope_open.mp4" type="video/mp4">
           </video>
-          <button class="playBtn" id="p1Play">▶︎ 播放</button>
+          <button class="playBtn" id="p1Play"><span class="tri"></span>播放</button>
         </div>
+        <button class="nextFab" id="nextFab"><span>下一頁</span><span class="chev"></span></button>
       </section>
       <!-- p2 -->
       <section class="page" id="p2">
@@ -81,15 +144,17 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
             <source id="sAscii" src="ascii_anim.mp4" type="video/mp4">
           </video>
         </div>
+        <button class="nextFab" id="nextFab2"><span>下一頁</span><span class="chev"></span></button>
       </section>
       <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4">
-          <a class="badge" href="#pop1"><img id="slot1" alt="能量瓶"></a>
-          <a class="badge" href="#pop2"><img id="slot2" alt="好天氣"></a>
-          <a class="badge" href="#pop3"><img id="slot3" alt="花束"></a>
-          <a class="badge" href="#pop4"><img id="slot4" alt="禮物"></a>
+          <a class="badge" href="#pop1" role="button" aria-label="工作辛苦了"><img id="slot1" alt="能量瓶"></a>
+          <a class="badge" href="#pop2" role="button" aria-label="工作順利"><img id="slot2" alt="好天氣"></a>
+          <a class="badge" href="#pop3" role="button" aria-label="順心好日子"><img id="slot3" alt="花束"></a>
+          <a class="badge" href="#pop4" role="button" aria-label="真心感謝"><img id="slot4" alt="禮物"></a>
         </div>
+        <button class="nextFab" id="nextFab3"><span>下一頁</span><span class="chev"></span></button>
       </section>
       <!-- p4 -->
       <section class="page" id="p4">
@@ -102,32 +167,30 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
               <div class="jp">ありがとうございます<small>いつも応援してくれて、ほんとうに感謝です。</small></div>
               <div class="btns">
                 <button class="btn alt" id="btnReplay">再一次</button>
-                <button class="btn" id="btnShare">分享</button>
+                <button class="btn dark" id="btnShare">分享</button>
               </div>
             </div>
           </div>
         </div>
+        <!-- 沒有完成鈕了 -->
       </section>
-    </div>
-    <div class="nav">
-      <button class="btn alt" id="btnNext" style="display:none">下一頁</button>
     </div>
   </div>
 </div>
 
-<!-- popups -->
-<section id="pop1" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作辛苦了，加油 💪✨<br><a class="ok" href="#p3">pika~</a></div></section>
-<section id="pop2" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作一切順利～ 🌈<br><a class="ok" href="#p3">pika~</a></div></section>
-<section id="pop3" class="layer"><a href="#p3" class="bgclose"></a><div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="ok" href="#p3">pika~</a></div></section>
-<section id="pop4" class="layer"><a href="#p3" class="bgclose"></a><div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="ok" href="#p3">pika~</a></div></section>
+<!-- Popups -->
+<section id="pop1" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">工作辛苦了，加油 💪✨<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop2" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">工作一切順利～ 🌈<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop3" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop4" class="layer"><a href="#p3" class="bgclose" aria-label="關閉"></a><div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="ok" href="#p3">pika~</a></div></section>
 
-<!-- share modal -->
+<!-- Share modal -->
 <div class="shareLayer" id="shareLayer">
   <div class="shareCard">
     <h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
     <div id="qr" class="qr"></div>
     <div class="row">
-      <button class="btn" id="copyUrl">複製網址</button>
+      <button class="btn dark" id="copyUrl">複製網址</button>
       <button class="btn alt" id="closeShare">關閉</button>
     </div>
     <div class="copyNote" id="copyNote"></div>
@@ -136,90 +199,65 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
 
 <script>
 (function(){
-  // 破快取一次（避免 CDN 舊檔）
+  // ---- cache-bust to avoid stale files ----
   const VER = Date.now().toString(36);
   const bust = (u)=> u + (u.includes('?') ? '&' : '?') + 'v=' + VER;
+  ['sIntro','sAscii','sFinale'].forEach(id=>{
+    const s=document.getElementById(id); if(s) s.src = bust(s.getAttribute('src'));
+  });
+  const poster = 'poster.png';
+  fetch(poster,{method:'HEAD'}).then(r=>{ if(r.ok){ const v=document.getElementById('vIntro'); v.setAttribute('poster', bust(poster)); } });
 
   const pages=[...document.querySelectorAll('.page')];
   let idx=0;
-  const next=document.getElementById('btnNext');
-
   function show(i){
     pages[idx].classList.remove('active');
     idx=Math.max(0,Math.min(pages.length-1,i));
     pages[idx].classList.add('active');
-    next.textContent=(idx===pages.length-1)?'完成':'下一頁';
-
-    if(idx===1){ // p2: 啟播 + 取背景色
-      ensurePlay(vAscii);
-      setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 80);
-    }
-    if(idx===3){ // p4: 直接播放
-      ensurePlay(vFinale);
-    }
+    // 控制 FAB 顯示
+    document.getElementById('nextFab').classList.toggle('show', idx===0 && introEnded);
+    document.getElementById('nextFab2').classList.toggle('show', idx===1);
+    document.getElementById('nextFab3').classList.toggle('show', idx===2);
+    if(idx===1){ ensurePlay(vAscii); setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 80); }
+    if(idx===3){ ensurePlay(vFinale); }
   }
 
-  // 元素
+  // Next FAB actions
+  document.getElementById('nextFab').onclick = ()=> show(1);
+  document.getElementById('nextFab2').onclick = ()=> show(2);
+  document.getElementById('nextFab3').onclick = ()=> show(3);
+
+  // Videos
   const vIntro=document.getElementById('vIntro');
   const vAscii=document.getElementById('vAscii');
   const vFinale=document.getElementById('vFinale');
   const p2wrap=document.getElementById('p2wrap');
+
+  // Autoplay on load; if blocked, show central play button
   const p1Play=document.getElementById('p1Play');
-  // bust src
-  ['sIntro','sAscii','sFinale'].forEach(id=>{
-    const s=document.getElementById(id);
-    s && s.setAttribute('src', bust(s.getAttribute('src')));
-  });
-  vIntro.setAttribute('poster', bust('poster.png'));
-  vIntro.load(); vAscii.load(); vFinale.load();
-
-  // Step 1: 進站自動播放（若被擋，顯示中央播放鈕）
-  function autoStart(){
-    vIntro.play().then(()=>{
-      p1Play.classList.remove('show');
-    }).catch(()=>{
-      p1Play.classList.add('show'); // 使用者可點此播放
-    });
+  function tryAutoStart(){
+    vIntro.play().then(()=> p1Play.classList.remove('show'))
+                 .catch(()=> p1Play.classList.add('show'));
   }
-  document.addEventListener('DOMContentLoaded', autoStart, {once:true});
-  p1Play.addEventListener('click', ()=>{
-    vIntro.play().then(()=> p1Play.classList.remove('show'));
-  });
-  vIntro.addEventListener('click', ()=>{
-    if(vIntro.paused) vIntro.play().then(()=> p1Play.classList.remove('show'));
-  });
+  document.addEventListener('DOMContentLoaded', tryAutoStart, {once:true});
+  p1Play.addEventListener('click', ()=> vIntro.play().then(()=> p1Play.classList.remove('show')) );
+  vIntro.addEventListener('click', ()=> { if(vIntro.paused) vIntro.play().then(()=> p1Play.classList.remove('show')); });
 
-  // Step 2: 播放完才顯示「下一頁」
-  vIntro.addEventListener('ended', ()=>{
-    next.style.display='inline-block';
-  });
+  let introEnded=false;
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; document.getElementById('nextFab').classList.add('show'); });
 
-  // 下一頁行為
-  next.addEventListener('click', ()=>{
-    if(idx===pages.length-1){ return; }
-    show(idx+1);
-    // 若從 p3 → p4，先把「完成」藏起來直到 finale 播完
-    if(idx===3){ next.style.display='none'; }
-  });
-
-  // Finale 結束顯示感謝 + 再次/分享
+  // Finale ended -> show thanks
   const finalMsg=document.getElementById('finalMsg');
-  vFinale.addEventListener('ended', ()=>{
-    finalMsg.style.display='grid';
-    next.style.display='inline-block'; // 顯示「完成」字樣（可再點回到頭或僅保留在頁面）
-    next.textContent='完成';
-  });
+  vFinale.addEventListener('ended', ()=>{ finalMsg.style.display='grid'; });
 
-  // 再一次：回到 p1 並重播
+  // Replay
   document.getElementById('btnReplay').onclick=()=>{
     finalMsg.style.display='none';
     [vFinale,vAscii,vIntro].forEach(v=>{ try{v.pause(); v.currentTime=0;}catch(e){} });
-    next.style.display='none';
-    show(0);
-    autoStart();
+    introEnded=false; show(0); tryAutoStart();
   };
 
-  // 分享：顯示 QR + 複製網址
+  // Share
   const shareLayer=document.getElementById('shareLayer');
   document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
   document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
@@ -235,9 +273,7 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
   }
 
   // helpers
-  function ensurePlay(video){
-    video.play().catch(()=>{ video.controls=true; }); // 被擋就出現原生控制播放
-  }
+  function ensurePlay(video){ video.play().catch(()=>{ video.controls=true; }); }
   async function sampleBg(video){
     try{
       if(!video.videoWidth) return null;
@@ -251,7 +287,7 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
     }catch(e){ return null; }
   }
 
-  // lazy load 4圖（副檔名自動嘗試 + 破快取）
+  // Load four images with extension fallback + cache bust
   const exts=['png','jpg','jpeg','webp','svg'];
   function loadImg(id,bases){ const el=document.getElementById(id);
     (function tryNextBase(bi){ if(bi>=bases.length){ el.alt=''; return; }
@@ -268,6 +304,9 @@ button.btn.alt{background:var(--gold);color:#3b2a00}
   loadImg('slot2',['slot2','pic2','opt2']);
   loadImg('slot3',['slot3','pic3','opt3']);
   loadImg('slot4',['slot4','pic4','opt4']);
+
+  // initial
+  show(0);
 })();
 </script>
 </body>
