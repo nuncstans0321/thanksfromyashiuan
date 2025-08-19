@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>感謝卡 — Play Button Flow</title>
+<title>感謝卡 — 強化播放 v6</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
@@ -21,8 +21,6 @@ body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Sego
 .page{position:absolute;inset:0;opacity:0;transform:translateY(10px) scale(.98);
       transition:.45s ease;padding:clamp(12px,3vw,28px);display:grid;place-items:center}
 .page.active{opacity:1;transform:none}
-
-/* video area */
 .vbox{position:relative;width:100%;height:100%;display:grid;place-items:center;background:#fff;border-radius:16px;overflow:hidden}
 .vbox video{width:100%;height:100%;object-fit:contain;background:transparent;display:block}
 .playBtn{position:absolute;right:14px;bottom:14px;z-index:6;border:none;border-radius:14px;
@@ -30,30 +28,23 @@ body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Sego
          box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;gap:.45rem}
 .playBtn .tri{display:inline-block;width:0;height:0;border-left:10px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent}
 .playBtn.hide{display:none}
-
-/* ascii */
+.fallback{position:absolute;left:14px;bottom:14px;z-index:6;background:rgba(255,255,255,.92);border-radius:10px;padding:.5rem .7rem;font-size:14px;color:#333;display:none;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.fallback a{font-weight:800;color:#0b5cd7;text-decoration:none}
+.hintTap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.55);color:#fff;padding:.6rem 1rem;border-radius:14px;font-weight:800;z-index:5;display:none}
 .p2wrap{position:relative;width:100%;height:100%;background:#111;border-radius:16px;display:grid;place-items:center}
 .p2wrap video{width:100%;height:100%;object-fit:contain;background:transparent}
-
-/* grid 4 */
 .grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;width:100%;height:100%}
 .badge{display:grid;place-items:center;border:1px solid #f0e6c6;border-radius:16px;background:#fffdf3;text-decoration:none;color:inherit;min-height:180px}
 .badge img{width:min(42vw,200px);height:min(42vw,200px);object-fit:contain}
-
-/* nav */
 .nav{display:flex;gap:10px;justify-content:flex-end;padding:10px}
 button.btn{appearance:none;border:none;padding:.8rem 1.1rem;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.12)}
 button.btn.alt{background:var(--gold);color:#3b2a00}
 button.btn[disabled]{opacity:.5;pointer-events:none}
-
-/* popups */
 .layer{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:50}
 .layer:target{display:grid}
 .layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6;box-shadow:0 16px 44px rgba(0,0,0,.28)}
 .layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
 .layer .bgclose{position:absolute;inset:0;content:"";display:block}
-
-/* finale overlay */
 .final-msg{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,255,255,.0)}
 .final-msg .inner{text-align:center}
 .final-msg .jp{font-weight:900;letter-spacing:.04em;font-size:clamp(28px,5vw,72px)}
@@ -71,20 +62,23 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
 <div class="stage">
   <div class="card">
     <div class="pages">
-      <!-- p1 -->
       <section class="page active" id="p1">
-        <div class="vbox" id="p1box">
-          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted poster="poster.png" src="envelope_open.mp4"></video>
-          <button class="playBtn" id="playIntro" aria-label="點信封播放"><span class="tri"></span>播放</button>
+        <div class="vbox">
+          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted poster="poster.png">
+            <source src="envelope_open.mp4" type="video/mp4">
+          </video>
+          <div class="hintTap" id="tap1">點擊播放</div>
+          <button class="playBtn" id="playIntro"><span class="tri"></span>播放</button>
+          <div class="fallback" id="fb1">若無法播放，<a href="envelope_open.mp4" target="_blank">直接開啟影片</a></div>
         </div>
       </section>
-      <!-- p2 -->
       <section class="page" id="p2">
         <div class="p2wrap" id="p2wrap">
-          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop src="ascii_anim.mp4"></video>
+          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop>
+            <source src="ascii_anim.mp4" type="video/mp4">
+          </video>
         </div>
       </section>
-      <!-- p3 -->
       <section class="page" id="p3">
         <div class="grid4">
           <a class="badge" href="#pop1"><img id="slot1" src="slot1.png" alt="能量瓶"></a>
@@ -93,10 +87,11 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
           <a class="badge" href="#pop4"><img id="slot4" src="slot4.png" alt="禮物"></a>
         </div>
       </section>
-      <!-- p4 -->
       <section class="page" id="p4">
-        <div class="vbox" id="p4box">
-          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted src="finale.mp4"></video>
+        <div class="vbox">
+          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted>
+            <source src="finale.mp4" type="video/mp4">
+          </video>
           <div class="final-msg" id="finalMsg">
             <div class="inner">
               <div class="jp">ありがとうございます<small>いつも応援してくれて、ほんとうに感謝です。</small></div>
@@ -116,13 +111,11 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
   </div>
 </div>
 
-<!-- popups -->
 <section id="pop1" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作辛苦了，加油 💪✨<br><a class="ok" href="#p3">pika~</a></div></section>
 <section id="pop2" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作一切順利～ 🌈<br><a class="ok" href="#p3">pika~</a></div></section>
 <section id="pop3" class="layer"><a href="#p3" class="bgclose"></a><div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="ok" href="#p3">pika~</a></div></section>
 <section id="pop4" class="layer"><a href="#p3" class="bgclose"></a><div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="ok" href="#p3">pika~</a></div></section>
 
-<!-- share modal -->
 <div class="shareLayer" id="shareLayer">
   <div class="shareCard">
     <h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
@@ -137,6 +130,9 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
 
 <script>
 (function(){
+  const VER = Date.now().toString(36); // 破快取
+  const bust = u => u + (u.includes('?') ? '&' : '?') + 'v=' + VER;
+
   const pages=[...document.querySelectorAll('.page')];
   let idx=0;
   const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
@@ -147,64 +143,82 @@ button.btn[disabled]{opacity:.5;pointer-events:none}
     prev.disabled = (idx===0);
     next.textContent=(idx===pages.length-1)?'完成':'下一頁';
     if(idx===0 && !introEnded){ next.disabled=true; } else { next.disabled=false; }
+    if(idx===1) ensurePlay(vAscii,true); // 切到 p2 就啟播
+    if(idx===3) ensurePlay(vFinale,true);
   }
   prev.onclick=()=>show(idx-1);
   next.onclick=()=>{ if(idx===pages.length-1){ return; } show(idx+1); };
   show(0);
 
-  /* p1 */
+  /* ---- Utilities ---- */
+  async function ensurePlay(v, hideControlsWhenPlaying){
+    try{
+      v.muted = true; v.playsInline = true; v.setAttribute('playsinline','');
+      // 強制破快取再載一次
+      const src = v.querySelector('source');
+      if(src && !src.dataset.busted){ src.src = bust(src.getAttribute('src')); src.dataset.busted = '1'; v.load(); }
+      await v.play();
+      if(hideControlsWhenPlaying) v.controls = false;
+      return true;
+    }catch(e){
+      v.controls = true; // 顯示原生控制
+      return false;
+    }
+  }
+  function showFallback(el){ el.style.display='block'; }
+
+  /* ---- Page 1 ---- */
   const vIntro=document.getElementById('vIntro');
   const playIntro=document.getElementById('playIntro');
+  const tap1=document.getElementById('tap1');
+  const fb1=document.getElementById('fb1');
   let introEnded=false;
+
   function startIntro(){
-    vIntro.play()
-      .then(()=>{ playIntro.classList.add('hide'); })
-      .catch((err)=>{ console.warn('play failed', err); alert('無法播放影片，請確認檔案編碼或來源'); });
+    ensurePlay(vIntro,false).then(ok=>{
+      if(ok){ playIntro.classList.add('hide'); tap1.style.display='none'; }
+      else{ showFallback(fb1); }
+    });
   }
-  playIntro.addEventListener('click', startIntro);
-  vIntro.addEventListener('click', startIntro);
+  // 三種互動都能啟動
+  ['click','touchend'].forEach(ev=>{
+    playIntro.addEventListener(ev, startIntro, {passive:true});
+    vIntro.addEventListener(ev, startIntro, {passive:true});
+  });
+  vIntro.addEventListener('loadeddata', ()=>{ tap1.style.display='block'; });
   vIntro.addEventListener('pause', ()=>{ if(!vIntro.ended) playIntro.classList.remove('hide'); });
   vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; });
 
-  /* p2 */
+  /* ---- Page 2 ---- */
   const vAscii=document.getElementById('vAscii');
   const p2wrap=document.getElementById('p2wrap');
-  function activateAscii(){
-    try{ vAscii.play().catch(()=>{});}catch(e){}
-    setTimeout(()=>sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 60);
-  }
-  // 當頁面切換到 p2 時觸發播放（避免自動播放限制）
-  const obs = new MutationObserver(()=>{
-    if (pages[1].classList.contains('active')) activateAscii();
-    if (pages[3].classList.contains('active')) { try{ vFinale.play().catch(()=>{});}catch(e){} }
+  vAscii.addEventListener('loadeddata', ()=>{
+    // 取第一幀平均色
+    setTimeout(()=>{
+      try{
+        const w=32,h=Math.max(1,Math.round(32*vAscii.videoHeight/vAscii.videoWidth));
+        const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
+        c.width=w;c.height=h; ctx.drawImage(vAscii,0,0,w,h);
+        const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
+        for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
+        r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+        p2wrap.style.background=`rgb(${r},${g},${b})`;
+      }catch(e){}
+    },60);
   });
-  obs.observe(document.querySelector('.pages'),{subtree:true,attributes:true,attributeFilter:['class']});
 
-  function sampleBg(video){
-    try{
-      if(!video.videoWidth) return null;
-      const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth));
-      const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
-      c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h);
-      const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
-      for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
-      r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
-      return `rgb(${r},${g},${b})`;
-    }catch(e){ return null; }
-  }
-
-  /* p4 finale */
+  /* ---- Page 4 ---- */
   const vFinale=document.getElementById('vFinale');
   const finalMsg=document.getElementById('finalMsg');
   vFinale.addEventListener('ended', ()=>{ finalMsg.style.display='grid'; });
 
   document.getElementById('btnReplay').onclick=()=>{
-    finalMsg.style.display='none'; vFinale.pause(); vFinale.currentTime=0;
-    vAscii.pause(); vAscii.currentTime=0;
-    vIntro.pause(); vIntro.currentTime=0; playIntro.classList.remove('hide'); introEnded=false; show(0);
+    finalMsg.style.display='none';
+    [vFinale,vAscii,vIntro].forEach(v=>{ try{v.pause(); v.currentTime=0;}catch(e){} });
+    playIntro.classList.remove('hide'); introEnded=false; show(0);
   };
 
-  /* share */
+  /* ---- Share ---- */
   const shareLayer=document.getElementById('shareLayer');
   document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
   document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
