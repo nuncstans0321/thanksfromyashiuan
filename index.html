@@ -1,34 +1,260 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Minimal Video (Debug)</title>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>感謝卡 — flow_fixed</title>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  html,body{height:100%;margin:0;background:#fff8ec;display:flex;align-items:center;justify-content:center}
-  .wrap{width:min(980px,96vw);height:min(700px,94svh);background:#fffef9;border-radius:18px;
-        box-shadow:0 20px 60px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.07);
-        display:grid;grid-template-rows:1fr auto;overflow:hidden}
-  video{width:100%;height:100%;object-fit:contain;background:#000}
-  #log{font:12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:8px 10px; background:#111; color:#0f0; margin:0}
+:root{ --bg:#fff8ec; --paper:#fffef9; --ink:#222; --gold:#ffd24d; --radius:22px; }
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:ui-rounded,"Noto Sans TC",system-ui,-apple-system,Segoe UI,Arial;
+     background:radial-gradient(1200px 800px at 20% 20%,#fffaf0,var(--bg));
+     color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.stage{width:min(980px,96vw);height:min(700px,94svh);position:relative}
+@supports not (height:1svh){.stage{height:min(700px,94vh)}}
+.card{position:absolute;inset:0;background:var(--paper);border-radius:var(--radius);
+      box-shadow:0 20px 60px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.07);overflow:hidden;
+      display:grid;grid-template-rows:1fr auto}
+.pages{position:relative;overflow:hidden}
+.page{position:absolute;inset:0;opacity:0;transform:translateY(10px) scale(.98);
+      transition:.45s ease;padding:clamp(12px,3vw,28px);display:grid;place-items:center}
+.page.active{opacity:1;transform:none}
+
+/* video area */
+.vbox{position:relative;width:100%;height:100%;display:grid;place-items:center;background:#fff;border-radius:16px;overflow:hidden}
+.vbox video{width:100%;height:100%;object-fit:contain;background:transparent;display:block}
+.playBtn{position:absolute;right:14px;bottom:14px;z-index:6;border:none;border-radius:14px;
+         background:#111;color:#fff;padding:.7rem 1rem;font-weight:800;
+         box-shadow:0 10px 24px rgba(0,0,0,.25);cursor:pointer;display:flex;align-items:center;gap:.45rem}
+.playBtn .tri{display:inline-block;width:0;height:0;border-left:10px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent}
+.playBtn.hide{display:none}
+
+/* ascii */
+.p2wrap{position:relative;width:100%;height:100%;background:#111;border-radius:16px;display:grid;place-items:center}
+.p2wrap video{width:100%;height:100%;object-fit:contain;background:transparent}
+
+/* grid 4 */
+.grid4{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:14px;width:100%;height:100%}
+.badge{display:grid;place-items:center;border:1px solid #f0e6c6;border-radius:16px;background:#fffdf3;text-decoration:none;color:inherit;min-height:180px}
+.badge img{width:min(42vw,200px);height:min(42vw,200px);object-fit:contain}
+
+/* nav */
+.nav{display:flex;gap:10px;justify-content:flex-end;padding:10px}
+button.btn{appearance:none;border:none;padding:.8rem 1.1rem;border-radius:12px;background:#111;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+button.btn.alt{background:var(--gold);color:#3b2a00}
+button.btn[disabled]{opacity:.5;pointer-events:none}
+
+/* popups */
+.layer{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;place-items:center;z-index:50}
+.layer:target{display:grid}
+.layer .box{background:#fff;color:#222;padding:22px;border-radius:16px;width:min(92vw,720px);text-align:center;font-size:clamp(18px,4vw,24px);line-height:1.6;box-shadow:0 16px 44px rgba(0,0,0,.28)}
+.layer .ok{display:inline-block;margin-top:14px;background:#111;color:#fff;padding:.7rem 1.1rem;border-radius:12px;text-decoration:none;font-weight:800}
+.layer .bgclose{position:absolute;inset:0;content:"";display:block}
+
+/* finale overlay */
+.final-msg{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,255,255,.0)}
+.final-msg .inner{text-align:center}
+.final-msg .jp{font-weight:900;letter-spacing:.04em;font-size:clamp(28px,5vw,72px)}
+.final-msg .jp small{display:block; font-size:.45em; opacity:.75; margin-top:.2em}
+.final-msg .btns{margin-top:16px;display:flex;gap:10px;justify-content:center}
+.shareLayer{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45);z-index:60}
+.shareLayer.show{display:grid}
+.shareCard{background:#fff;padding:20px;border-radius:16px;width:min(92vw,420px);box-shadow:0 16px 44px rgba(0,0,0,.33);text-align:center}
+.shareCard .qr{display:grid;place-items:center;margin:10px auto}
+.shareCard .row{display:flex;gap:8px;justify-content:center;margin-top:8px}
+.copyNote{font-size:13px;color:#666;margin-top:6px}
 </style>
-<div class="wrap">
-  <video id="v" playsinline webkit-playsinline muted autoplay controls poster="poster.png">
-    <source src="envelope_open.mp4" type="video/mp4">
-    您的瀏覽器不支援影片。
-  </video>
-  <pre id="log">log…</pre>
+</head>
+<body>
+<div class="stage">
+  <div class="card">
+    <div class="pages">
+      <!-- p1 -->
+      <section class="page active" id="p1">
+        <div class="vbox">
+          <video id="vIntro" playsinline webkit-playsinline preload="auto" muted poster="poster.png">
+            <source id="sIntro" src="envelope_open_fixed.mp4" type="video/mp4">
+          </video>
+          <button class="playBtn" id="playIntro"><span class="tri"></span>播放</button>
+        </div>
+      </section>
+      <!-- p2 -->
+      <section class="page" id="p2">
+        <div class="p2wrap" id="p2wrap">
+          <video id="vAscii" playsinline webkit-playsinline preload="auto" muted loop>
+            <source id="sAscii" src="ascii_anim_fixed.mp4" type="video/mp4">
+          </video>
+        </div>
+      </section>
+      <!-- p3 -->
+      <section class="page" id="p3">
+        <div class="grid4">
+          <a class="badge" href="#pop1"><img id="slot1" alt="能量瓶"></a>
+          <a class="badge" href="#pop2"><img id="slot2" alt="好天氣"></a>
+          <a class="badge" href="#pop3"><img id="slot3" alt="花束"></a>
+          <a class="badge" href="#pop4"><img id="slot4" alt="禮物"></a>
+        </div>
+      </section>
+      <!-- p4 -->
+      <section class="page" id="p4">
+        <div class="vbox">
+          <video id="vFinale" playsinline webkit-playsinline preload="auto" muted>
+            <source id="sFinale" src="finale_fixed.mp4" type="video/mp4">
+          </video>
+          <div class="final-msg" id="finalMsg">
+            <div class="inner">
+              <div class="jp">ありがとうございます<small>いつも応援してくれて、ほんとうに感謝です。</small></div>
+              <div class="btns">
+                <button class="btn alt" id="btnReplay">再一次</button>
+                <button class="btn" id="btnShare">分享</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="nav">
+      <button class="btn" id="btnPrev" disabled>上一頁</button>
+      <button class="btn alt" id="btnNext" disabled>下一頁</button>
+    </div>
+  </div>
 </div>
+
+<!-- popups -->
+<section id="pop1" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作辛苦了，加油 💪✨<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop2" class="layer"><a href="#p3" class="bgclose"></a><div class="box">工作一切順利～ 🌈<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop3" class="layer"><a href="#p3" class="bgclose"></a><div class="box">希望今天沒有突發狀況，是順心好日子！🍀<br><a class="ok" href="#p3">pika~</a></div></section>
+<section id="pop4" class="layer"><a href="#p3" class="bgclose"></a><div class="box">呈上真心的萬分感謝 ✨⭐️❤️<br><a class="ok" href="#p3">pika~</a></div></section>
+
+<!-- share modal -->
+<div class="shareLayer" id="shareLayer">
+  <div class="shareCard">
+    <h3 style="margin:0 0 6px 0;">分享這張卡片</h3>
+    <div id="qr" class="qr"></div>
+    <div class="row">
+      <button class="btn" id="copyUrl">複製網址</button>
+      <button class="btn alt" id="closeShare">關閉</button>
+    </div>
+    <div class="copyNote" id="copyNote"></div>
+  </div>
+</div>
+
 <script>
-  const v=document.getElementById('v');
-  const log=document.getElementById('log');
-  function L(){ log.textContent += '\\n' + Array.from(arguments).join(' '); log.scrollTop = log.scrollHeight; }
-  ['loadstart','loadedmetadata','loadeddata','canplay','canplaythrough','play','playing','pause','ended','stalled','suspend','waiting','seeking','seeked','timeupdate','volumechange','ratechange','error','emptied','abort'].forEach(ev=>{
-    v.addEventListener(ev, ()=>L('event:', ev));
-  });
-  v.addEventListener('error', ()=>{
-    const e=v.error; if(!e) return;
-    L('video.error code=', e.code, '(1:ABORTED, 2:NETWORK, 3:DECODE, 4:SRC_NOT_SUPPORTED)');
-  });
-  v.play().then(()=>L('play(): ok')).catch(err=>L('play(): rejected ->', (err && err.name)||'', (err && err.message)||'' ));
-  v.addEventListener('click', ()=> v.play().then(()=>L('click->play ok')).catch(err=>L('click->play fail', err && err.message)));
+(function(){
+  // ---- cache-bust helper (避免 CDN 舊檔) ----
+  const VER = Date.now().toString(36);
+  const bust = (u)=> u + (u.includes('?') ? '&' : '?') + 'v=' + VER;
+
+  // ---- page switching ----
+  const pages=[...document.querySelectorAll('.page')];
+  let idx=0;
+  const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
+  function show(i){
+    pages[idx].classList.remove('active');
+    idx=Math.max(0,Math.min(pages.length-1,i));
+    pages[idx].classList.add('active');
+    prev.disabled = (idx===0);
+    next.textContent=(idx===pages.length-1)?'完成':'下一頁';
+    if(idx===0 && !introEnded){ next.disabled=true; } else { next.disabled=false; }
+
+    if(idx===1){ // p2 ascii
+      ensurePlay(vAscii).then(()=> setTimeout(()=> sampleBg(vAscii).then(c=>{ if(c) p2wrap.style.background=c; }), 80));
+    }
+    if(idx===3){ // p4 finale
+      ensurePlay(vFinale);
+    }
+  }
+  prev.onclick=()=>show(idx-1);
+  next.onclick=()=>{ if(idx===pages.length-1){ return; } show(idx+1); };
+  pages[0].classList.add('active');
+
+  // ---- videos & helpers ----
+  const vIntro=document.getElementById('vIntro');
+  const sIntro=document.getElementById('sIntro');
+  const playIntro=document.getElementById('playIntro');
+  const vAscii=document.getElementById('vAscii');
+  const sAscii=document.getElementById('sAscii');
+  const vFinale=document.getElementById('vFinale');
+  const sFinale=document.getElementById('sFinale');
+  const p2wrap=document.getElementById('p2wrap');
+
+  // bust sources on load
+  [sIntro,sAscii,sFinale].forEach(s=> s.setAttribute('src', bust(s.getAttribute('src'))));
+  vIntro.setAttribute('poster', bust('poster.png'));
+  vIntro.load(); vAscii.load(); vFinale.load();
+
+  function playWithBtn(video, btn){
+    video.play().then(()=>{ btn.classList.add('hide'); }).catch(()=>{ video.controls=true; /* show native controls */ });
+  }
+  function ensurePlay(video){
+    return video.play().catch(()=>{ video.controls=true; return Promise.resolve(false); });
+  }
+  async function sampleBg(video){
+    try{
+      if(!video.videoWidth) return null;
+      const w=32,h=Math.max(1,Math.round(32*video.videoHeight/video.videoWidth));
+      const c=document.createElement('canvas'); const ctx=c.getContext('2d',{willReadFrequently:true});
+      c.width=w;c.height=h; ctx.drawImage(video,0,0,w,h);
+      const d=ctx.getImageData(0,0,w,h).data; let r=0,g=0,b=0,n=0;
+      for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}
+      r=Math.round(r/n); g=Math.round(g/n); b=Math.round(b/n);
+      return `rgb(${r},${g},${b})`;
+    }catch(e){ return null; }
+  }
+
+  // p1 behavior
+  let introEnded=false;
+  playIntro.addEventListener('click', ()=> playWithBtn(vIntro, playIntro));
+  vIntro.addEventListener('click', ()=> playWithBtn(vIntro, playIntro));
+  vIntro.addEventListener('pause', ()=>{ if(!vIntro.ended) playIntro.classList.remove('hide'); });
+  vIntro.addEventListener('ended', ()=>{ introEnded=true; next.disabled=false; });
+
+  // p4 finale end
+  const finalMsg=document.getElementById('finalMsg');
+  vFinale.addEventListener('ended', ()=>{ finalMsg.style.display='grid'; });
+
+  // replay
+  document.getElementById('btnReplay').onclick=()=>{
+    finalMsg.style.display='none';
+    [vFinale,vAscii,vIntro].forEach(v=>{ try{v.pause(); v.currentTime=0;}catch(e){} });
+    playIntro.classList.remove('hide'); introEnded=false; show(0);
+  };
+
+  // share
+  const shareLayer=document.getElementById('shareLayer');
+  document.getElementById('btnShare').onclick=()=>{ shareLayer.classList.add('show'); buildQR(); };
+  document.getElementById('closeShare').onclick=()=>{ shareLayer.classList.remove('show'); };
+  document.getElementById('copyUrl').onclick=async ()=>{
+    const url=location.href.split('#')[0];
+    try{ await navigator.clipboard.writeText(url); document.getElementById('copyNote').textContent='已複製網址 ✔'; }
+    catch(e){ document.getElementById('copyNote').textContent=url; }
+  };
+  function buildQR(){
+    const box=document.getElementById('qr'); box.innerHTML='';
+    if(window.QRCode){ new QRCode(box, {text: location.href.split('#')[0], width:220, height:220}); }
+    else { box.textContent = location.href.split('#')[0]; }
+  }
+
+  // images loader with ext fallback + cache bust
+  const exts=['png','jpg','jpeg','webp','svg'];
+  function loadImg(id,bases){ const el=document.getElementById(id);
+    (function tryNextBase(bi){ if(bi>=bases.length){ el.alt=''; return; }
+      (function tryExt(i){ if(i>=exts.length){ tryNextBase(bi+1); return; }
+        const url=bust(bases[bi]+'.'+exts[i]);
+        const t=new Image();
+        t.onload=()=>el.src=url;
+        t.onerror=()=>tryExt(i+1);
+        t.src=url;
+      })(0);
+    })(0);
+  }
+  loadImg('slot1',['slot1','pic1','opt1']);
+  loadImg('slot2',['slot2','pic2','opt2']);
+  loadImg('slot3',['slot3','pic3','opt3']);
+  loadImg('slot4',['slot4','pic4','opt4']);
+})();
 </script>
+</body>
+</html>
