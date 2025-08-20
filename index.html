@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.4.7</title>
+<title>感謝卡 — v9.4.8 (P3 only)</title>
 <style>
 :root{--r:22px;--card:#f2f3f5;--ink:#1f2328;--gap:12px}
 *{box-sizing:border-box}html,body{height:100%}
@@ -13,10 +13,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 #p3{display:block;overflow:auto;-webkit-overflow-scrolling:touch;padding:12px}
 .vbox{position:relative;width:100%;height:100%;background:#000;border-radius:var(--r);overflow:hidden;display:flex;align-items:center;justify-content:center}
 .vbox video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
-/* Next (unchanged) */
+/* Next */
 .next{position:fixed;right:calc(2vw + 8px);bottom:calc(2vh + 8px);padding:.7rem 1.05rem;border-radius:999px;border:1px solid #0002;background:#ffd24a;font-weight:800;z-index:60;display:none}
 .next.show{display:inline-block}
-/* p2 ribbon (unchanged) */
+/* p2 ribbon */
 .p2ribbon{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #f2c94c;border-radius:12px;padding:6px 10px;font-weight:800;z-index:2;white-space:nowrap;max-width:95%;overflow:hidden;text-overflow:ellipsis;font-size:18px}
 @media (max-width:480px){.p2ribbon{font-size:16px}}
 /* p3 */
@@ -40,7 +40,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .play{position:relative;background:#0f1220;border-radius:12px;display:grid;place-items:center;min-height:260px;overflow:hidden}
 .play .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.28;filter:blur(2px)}
 .play .content{position:relative;padding:16px;color:#fff;display:grid;gap:16px;justify-items:center}
-.hint{font-size:12px;opacity:.9}
+.hint{font-size:12px;opacity:.9;text-align:center}
 .sheet .actions{display:flex;justify-content:center}
 .sheet .btn{border:1px solid #0002;background:#ffd24a;border-radius:999px;padding:.6rem 1.0rem;font-weight:800;cursor:pointer}
 /* Widgets */
@@ -50,21 +50,23 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .stamp{margin-top:6px;border:2px dashed #7ec3ff;color:#7ec3ff;font-weight:800;border-radius:8px;padding:4px 8px;opacity:0;transform:scale(.9);transition:.3s}
 .shield{background:#24352a;color:#bff5cf;border:1px solid #3e6b4f;border-radius:10px;padding:6px 10px;opacity:0;transform:translateY(6px);transition:.3s}
 /* Battery HUD */
-.hud{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.hud{position:absolute;inset:0;display:none;place-items:center;pointer-events:none;z-index:3}
+.hud .wrap{display:grid;justify-items:center;gap:8px}
+.hud img{width:clamp(240px,40vw,560px);height:auto;display:block;filter:drop-shadow(0 12px 28px rgba(0,0,0,.5))}
 .battery{display:grid;gap:6px;justify-items:center;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45))}
-.b-cell{width:210px;height:96px;border:5px solid #9bd2ff;border-radius:16px;position:relative;background:rgba(0,0,0,.3);overflow:hidden}
-.b-cell:after{content:"";position:absolute;right:-18px;top:30px;width:18px;height:36px;background:#9bd2ff;border-radius:4px}
+.b-cell{width:clamp(220px,46vw,520px);height:clamp(90px,16vw,180px);border:5px solid #9bd2ff;border-radius:16px;position:relative;background:rgba(0,0,0,.3);overflow:hidden}
+.b-cell:after{content:"";position:absolute;right:-18px;top:calc(50% - 18px);width:18px;height:36px;background:#9bd2ff;border-radius:4px}
 .b-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#1ee3ff,#7cffc9);box-shadow:inset 0 0 10px rgba(255,255,255,.35);transition:width .6s;border-right:4px solid rgba(255,255,255,.6)}
-.b-label{font-weight:900;font-size:22px;color:#d7f6ff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
-/* Gift image (note clipping fix by padding) */
-.giftWrap{position:relative;display:grid;place-items:center;padding-top:36px}
+.b-label{font-weight:900;font-size:clamp(18px,3vw,28px);color:#d7f6ff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
+/* Gift image (note clipping fix) */
+.giftWrap{position:relative;display:grid;place-items:center;padding-top:64px}
 .giftImg{width:min(380px,82%);max-width:82%;height:auto;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
 .giftGlow{animation:glow 1s ease-out}
 @keyframes glow{0%{filter:brightness(1)}50%{filter:brightness(1.35)}100%{filter:brightness(1)}}
-.giftNote{position:absolute;left:50%;top:8px;transform:translateX(-50%);background:#fff;color:#333;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;transition:.25s;z-index:3}
-/* Flower glow overlay (above content) */
-.glowImg{position:absolute;inset:0;margin:auto;max-width:min(520px,86%);max-height:72%;opacity:0;transition:opacity .3s ease;pointer-events:none;z-index:2;filter:drop-shadow(0 10px 22px rgba(255,210,74,.45))}
-/* P4 (unchanged) */
+.giftNote{position:absolute;left:50%;top:10px;transform:translateX(-50%);background:#fff;color:#333;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;transition:.25s;z-index:3}
+/* Flower glow overlay (only for Flower card) */
+.glowImg{position:absolute;inset:0;margin:auto;max-width:min(520px,86%);max-height:72%;opacity:0;transition:opacity .3s ease;pointer-events:none;z-index:2;filter:drop-shadow(0 10px 22px rgba(255,210,74,.45));display:none}
+/* P4 */
 #overlay{position:absolute;inset:0;display:none;place-items:center;background:radial-gradient(60% 60% at 50% 60%, rgba(0,0,0,.45), rgba(0,0,0,.18));backdrop-filter:blur(1.5px);z-index:70}
 .finalWrap{display:grid;gap:16px;justify-items:center}
 .finalWrap .jp{color:#fff;font-weight:900;font-size:clamp(24px,7.2vw,46px);text-shadow:0 3px 18px rgba(0,0,0,.5),0 1px 0 rgba(0,0,0,.25)}
@@ -80,7 +82,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 </style>
 </head><body>
 <div class="stage"><div class="card">
-  <!-- p1 (unchanged behavior) -->
+  <!-- p1 (unchanged) -->
   <section class="page active" id="p1">
     <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video></div>
     <button class="next" id="n1">下一頁</button>
@@ -158,21 +160,22 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     sBg.style.backgroundImage="url('"+bg+"?v="+bust+"')";
     if(titleHTML){ sTitle.innerHTML = titleHTML; } else { sTitle.textContent = title; }
     sSub.textContent=sub;
-    sContent.innerHTML=""; glow.style.opacity=0; glow.removeAttribute("src"); builder(sContent);
+    sContent.innerHTML=""; 
+    glow.style.opacity=0; glow.style.display="none"; glow.removeAttribute("src"); // reset glow for non-flower
+    builder(sContent);
     sheet.classList.add("show");
   }
   function closeSheet(){ sheet.classList.remove("show"); }
   sClose.addEventListener("click", closeSheet);
   sheet.querySelector(".scrim").addEventListener("click", closeSheet);
 
-  function toast(msg){ t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 1200); }
   const on=(el,fn)=>{ ["pointerup","click","touchend","keydown"].forEach(evt=>{ el.addEventListener(evt,(e)=>{ if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); fn(e); }, {passive:false}); }); };
   const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
 
   // preload optional assets flags (non-blocking)
   const has={B:false,F:false};
-  const imgB=new Image(); imgB.onload=()=>has.B=true; imgB.src="B.png?v="+bust;
-  const imgF=new Image(); imgF.onload=()=>has.F=true; imgF.src="flower2.png?v="+bust;
+  const preB=new Image(); preB.onload=()=>has.B=true; preB.src="B.png?v="+bust;
+  const preF=new Image(); preF.onload=()=>has.F=true; preF.src="flower2.png?v="+bust;
 
   // bind helper
   function bindTile(id, cb){
@@ -183,7 +186,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     if(img) ["click","pointerup","touchend"].forEach(evt=>img.addEventListener(evt,(e)=>{e.preventDefault(); e.stopPropagation(); cb();},{passive:false}));
   }
 
-  // ===== A 能量瓶（條→80%→100% B.png） =====
+  // ===== A 能量瓶（條→80%→100% B.png，100%持續到關閉） =====
   bindTile("b1", ()=>openSheet({
     bg:"slot1.png",
     title:"今天電量不足？充電站啟動 ⚡️",
@@ -191,49 +194,60 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     builder:(box)=>{
       const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點畫面充電 →";
       const pbar=document.createElement("div"); pbar.className="pbar"; const fill=document.createElement("div"); fill.className="fill"; pbar.appendChild(fill);
-      const hud=document.createElement("div"); hud.className="hud"; hud.style.display="none";
+      const hud=document.createElement("div"); hud.className="hud"; const wrap=document.createElement("div"); wrap.className="wrap"; hud.appendChild(wrap);
       box.append(tip, pbar, hud);
-      let step=0, lock=false;
-      function showBattery(percent, useImage){
-        hud.style.display="grid"; hud.innerHTML="";
+      let step=0, lock=false, completed=false;
+
+      function renderBattery(percent, useImage){
+        wrap.innerHTML="";
         if(useImage && has.B){
-          const im=document.createElement("img"); im.src="B.png?v="+bust; im.alt="battery"; im.style.width="240px"; im.style.filter="drop-shadow(0 8px 20px rgba(0,0,0,.45))";
+          const im=document.createElement("img"); im.src="B.png?v="+bust; im.alt="battery";
           const lab=document.createElement("div"); lab.className="b-label"; lab.textContent="⚡️ "+percent+"%";
-          const wrap=document.createElement("div"); wrap.style.display="grid"; wrap.style.justifyItems="center"; wrap.append(im, lab);
-          hud.append(wrap);
+          wrap.append(im, lab);
         }else{
-          const wrap=document.createElement("div"); wrap.className="battery";
+          const bat=document.createElement("div"); bat.className="battery";
           const cell=document.createElement("div"); cell.className="b-cell";
           const lvl=document.createElement("div"); lvl.className="b-fill"; lvl.style.width=percent+"%";
           cell.appendChild(lvl);
           const lab=document.createElement("div"); lab.className="b-label"; lab.textContent="⚡️ "+percent+"%";
-          wrap.append(cell, lab);
-          hud.append(wrap);
+          bat.append(cell, lab); wrap.append(bat);
         }
-        setTimeout(()=>{ hud.style.display="none"; }, 1000);
       }
+
+      function showHUD(persist=false){
+        hud.style.display="grid";
+        if(!persist){ setTimeout(()=>{ hud.style.display="none"; }, 1500); }
+      }
+
       on(box, ()=>{
-        if(lock) return; lock=true;
+        if(lock || completed) return; lock=true;
         step=(step%3)+1;
         if(step===1){
           requestAnimationFrame(()=> fill.style.width="100%");
           tip.textContent="再點兩下會觸發『滿格』小彩蛋 ✨";
           setTimeout(()=>{ fill.style.width="0"; lock=false; }, 1100);
         }else if(step===2){
-          showBattery(80,false); // CSS 80%
+          renderBattery(80,false);
+          showHUD(false);
           tip.textContent="最後一下！";
-          setTimeout(()=>{ lock=false; }, 650);
+          setTimeout(()=>{ lock=false; }, 900);
         }else{
-          showBattery(100,true); // B.png at 100%
-          burst(box,14);
-          tip.textContent="滿格！可以再玩一次，或換其他 Buff。";
-          setTimeout(()=>{ lock=false; }, 650);
+          renderBattery(100,true);
+          showHUD(true);
+          burst(box,16);
+          tip.textContent="滿格！pika～close 關閉後可再玩，或換其他 Buff。";
+          completed=true;
+          lock=false;
         }
       });
+
+      const cleanup=()=>{ completed=false; step=0; hud.style.display="none"; };
+      document.getElementById("sClose").addEventListener("click", cleanup, {once:true});
+      sheet.querySelector(".scrim").addEventListener("click", cleanup, {once:true});
     }
   }));
 
-  // ===== 交換：右上(b2) → 花束效果 =====
+  // ===== 右上(b2) → 花束 =====
   bindTile("b2", ()=>openSheet({
     bg:"slot2.png",
     title:"送你一束今日的好運 💐",
@@ -248,12 +262,17 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
         step=(step%3)+1;
         if(step===1){ face.textContent="💪"; tip.textContent="再點點看"; burst(box,8); }
         else if(step===2){ face.textContent="🫶"; tip.textContent="再點點看"; burst(box,8); }
-        else{ face.textContent="🌟"; if(has.F){ glow.src="flower2.png?v="+bust; glow.style.opacity=1; setTimeout(()=>{ glow.style.opacity=0; }, 900); } shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,10); setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 1000); tip.textContent="完成！可以再玩一次，或換其他 Buff。"; step=0; }
+        else{ face.textContent="🌟";
+          if(preF.complete || has.F){ glow.src="flower2.png?v="+bust; glow.style.display="block"; glow.style.opacity=1; setTimeout(()=>{ glow.style.opacity=0; setTimeout(()=>{ glow.style.display='none'; glow.removeAttribute('src'); }, 350); }, 1200); }
+          shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,10);
+          setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 1200);
+          tip.textContent="完成！可以再玩一次，或換其他 Buff。"; step=0;
+        }
       });
     }
   }));
 
-  // ===== 交換：左下(b3) → 天氣效果（提示改為通用） =====
+  // ===== 左下(b3) → 天氣 =====
   bindTile("b3", ()=>openSheet({
     bg:"slot3.png",
     titleHTML:'天氣系統連線中…<span class="only-mobile"><br></span>今日晴朗指數提升，心情放晴！ 🌈',
@@ -263,42 +282,42 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
       const face=document.createElement("div"); face.className="face"; face.textContent="🌥️";
       const stamp=document.createElement("div"); stamp.className="stamp"; stamp.textContent="+1 順利";
       box.append(tip, face, stamp);
+      glow.style.opacity=0; glow.style.display="none"; glow.removeAttribute("src");
       let s=0;
       on(box, ()=>{
         s=(s%3)+1;
         if(s===1){ face.textContent="⛅"; tip.textContent="再點點看"; }
         else if(s===2){ face.textContent="☀️"; tip.textContent="再點點看"; }
-        else{ face.textContent="🌈"; tip.textContent="完成！可以再玩一次，或換其他 Buff。"; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 900); burst(box,12); s=0; }
+        else{ face.textContent="🌈"; tip.textContent="完成！可以再玩一次，或換其他 Buff。"; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 1000); burst(box,12); s=0; }
       });
     }
   }));
 
-  // ===== D 禮物（note 置中且不會被裁切，已在 CSS 調整） =====
+  // ===== D 禮物 =====
   bindTile("b4", ()=>openSheet({
     bg:"slot4.png",
     title:"這份小禮物，裝著萬分感謝 ✨❤️",
     sub:"謝謝你，願好事不斷發生。",
     builder:(box)=>{
-      const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點開盒，再點看小紙條 →";
+      const tip=document.createElement("div"); tip.className="hint"; tip.textContent="點一下開盒，再點一次，呈上大感謝！";
       const wrap=document.createElement("div"); wrap.className="giftWrap";
       const img=document.createElement("img"); img.className="giftImg"; img.src="slot4.png?v="+bust; img.alt="禮物";
       const note=document.createElement("div"); note.className="giftNote"; note.textContent="博皓學長，謝謝你！";
       wrap.append(img,note);
       box.append(tip, wrap);
-      let step=0, noted=false;
+      let step=0, showing=false;
       on(box, ()=>{
         step=(step%2)+1;
-        if(step===1){ img.classList.remove("giftGlow"); void img.offsetWidth; img.classList.add("giftGlow"); burst(wrap,12); tip.textContent="再點一次：顯示感謝小紙條"; }
-        else{ if(!noted){ noted=true; note.style.opacity=1; tip.textContent="完成！可以關閉或換其他 Buff；再點重來。"; setTimeout(()=>{ note.style.opacity=0; }, 800); } else { noted=false; } }
+        if(step===1){ img.classList.remove("giftGlow"); void img.offsetWidth; img.classList.add("giftGlow"); burst(wrap,12); tip.textContent="再點一次，呈上大感謝！"; }
+        else{ if(!showing){ showing=true; note.style.opacity=1; tip.textContent="完成！可以關閉或換其他 Buff；再點重來。"; setTimeout(()=>{ note.style.opacity=0; showing=false; }, 1800); } }
       });
     }
   }));
 
-  // layout to keep all 4 tiles fully visible
   function layoutP3(){
     const p3=$("#p3"), banner=p3.querySelector(".banner"), hold=p3.querySelector(".gridHold"), grid=p3.querySelector(".grid4");
     const gap=parseFloat(getComputedStyle(grid).gap)||12;
-    const reserved=90; // for next btn
+    const reserved=90;
     const availH = p3.clientHeight - banner.offsetHeight - gap - reserved;
     const availW = hold.clientWidth;
     const tileW = Math.floor((availW - gap)/2);
