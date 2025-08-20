@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.4.2</title>
+<title>感謝卡 — v9.4.4</title>
 <style>
 :root{--r:22px;--card:#f2f3f5;--ink:#1f2328;--gap:12px}
 *{box-sizing:border-box}html,body{height:100%}
@@ -21,24 +21,26 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 @media (max-width:480px){.p2ribbon{font-size:16px}}
 /* p3 */
 .gridArea{height:100%;display:grid;grid-template-rows:auto 1fr;gap:var(--gap)}
-.banner{display:flex;gap:.5em;justify-content:center;align-items:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:10px;font-weight:900}
+.banner{display:grid;grid-auto-rows:auto;justify-items:center;align-items:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:10px 14px;font-weight:900;line-height:1.35}
+.banner span{display:block}
 .gridHold{position:relative}
 .grid4{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:var(--gap);z-index:1}
 .badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:8px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);outline:0;touch-action:manipulation;display:grid;grid-template-rows:1fr;min-height:0}
 .badge:focus{box-shadow:0 0 0 3px #3b82f6aa}
 .thumb{width:100%;height:100%;border-radius:10px;overflow:hidden;background:#fff;display:grid;place-items:center}
 .thumb img{width:100%;height:100%;object-fit:contain;display:block}
-/* Bottom Sheet (mobile) / Modal (desktop) */
+/* Bottom Sheet */
 .sheet{position:fixed;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .28s ease;z-index:120;display:grid;justify-items:center}
 .sheet.show{transform:translateY(0)}
 .sheet .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);}
-.sheet .panel{position:relative;width:min(720px,96vw);max-height:70svh;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -18px 48px rgba(0,0,0,.35);padding:14px 16px 16px 16px;display:grid;grid-template-rows:auto 1fr auto;gap:8px}
-@media (min-width:720px){.sheet .panel{border-radius:18px;max-height:80svh;margin-bottom:4vh}}
+.sheet .panel{position:relative;width:min(720px,96vw);max-height:72svh;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -18px 48px rgba(0,0,0,.35);padding:16px 18px 18px 18px;display:grid;grid-template-rows:auto 1fr auto;gap:10px}
+@media (min-width:720px){.sheet .panel{border-radius:18px;max-height:82svh;margin-bottom:4vh}}
 .sheet h3{margin:0 0 6px 0;font-size:20px}
 .sheet p{margin:0;color:#555}
-.play{position:relative;background:#0f1220;border-radius:12px;display:grid;place-items:center;min-height:220px;overflow:hidden}
+.play{position:relative;background:#0f1220;border-radius:12px;display:grid;place-items:center;min-height:260px;overflow:hidden}
 .play .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.28;filter:blur(2px)}
-.play .content{position:relative;padding:14px;color:#fff;display:grid;gap:12px;justify-items:center}
+.play .content{position:relative;padding:16px;color:#fff;display:grid;gap:16px;justify-items:center}
+.hint{font-size:12px;opacity:.85}
 .sheet .actions{display:flex;justify-content:center}
 .sheet .btn{border:1px solid #0002;background:#ffd24a;border-radius:999px;padding:.6rem 1.0rem;font-weight:800;cursor:pointer}
 /* Widgets */
@@ -48,13 +50,13 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .face{font-size:60px}
 .stamp{margin-top:6px;border:2px dashed #7ec3ff;color:#7ec3ff;font-weight:800;border-radius:8px;padding:4px 8px;opacity:0;transform:scale(.9);transition:.3s}
 .shield{background:#24352a;color:#bff5cf;border:1px solid #3e6b4f;border-radius:10px;padding:6px 10px;opacity:0;transform:translateY(6px);transition:.3s}
-.box{width:240px;height:150px;background:linear-gradient(180deg,#7a1f19,#6a1712);border:2px solid #a93b2f;border-radius:10px;position:relative}
-.lid{position:absolute;width:115%;height:24px;background:linear-gradient(180deg,#c44a3c,#a83e33);border:2px solid #a93b2f;border-bottom:none;border-radius:12px 12px 6px 6px;top:-22px;left:-7%;transform-origin:left center;transition:.35s}
-.ribbonY{position:absolute;width:14px;height:100%;left:50%;top:0;transform:translateX(-50%);background:linear-gradient(180deg,#ffd54a,#f9b84a)}
-.burst{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-size:28px;opacity:0;transition:.35s}
-.note{position:absolute;left:50%;top:-48px;transform:translateX(-50%);background:#fff;color:#333;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;transition:.25s}
-.open .lid{transform:rotate(-22deg) translateY(-6px)}.open .burst{opacity:1;transform:translateX(-50%) translateY(-6px)}
-/* P4: much softer overlay, no box */
+/* Gift image version */
+.giftWrap{position:relative;display:grid;place-items:center}
+.giftImg{width:min(380px,82%);max-width:82%;height:auto;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+.giftGlow{animation:glow 1s ease-out}
+@keyframes glow{0%{filter:brightness(1)}50%{filter:brightness(1.35)}100%{filter:brightness(1)}}
+.giftNote{position:absolute;left:50%;top:-50px;transform:translateX(-50%);background:#fff;color:#333;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;transition:.25s}
+/* P4 */
 #overlay{position:absolute;inset:0;display:none;place-items:center;background:radial-gradient(60% 60% at 50% 60%, rgba(0,0,0,.45), rgba(0,0,0,.18));backdrop-filter:blur(1.5px);z-index:70}
 .finalWrap{display:grid;gap:16px;justify-items:center}
 .finalWrap .jp{color:#fff;font-weight:900;font-size:clamp(24px,7.2vw,46px);text-shadow:0 3px 18px rgba(0,0,0,.5),0 1px 0 rgba(0,0,0,.25)}
@@ -66,6 +68,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
 .spark{position:fixed;font-size:18px;animation:rise .65s ease-out forwards;pointer-events:none;z-index:135}
 @keyframes rise{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-26px) scale(1.2);opacity:0}}
+.only-mobile{display:none}@media (max-width:520px){.only-mobile{display:inline}}
 </style>
 </head><body>
 <div class="stage"><div class="card">
@@ -85,7 +88,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   <!-- p3 -->
   <section class="page" id="p3">
     <div class="gridArea">
-      <div class="banner">亞璇的祝福派送中，<span class="sub">任選一份今日 Buff，點一下領取 ✨</span></div>
+      <div class="banner">
+        <span>亞璇的祝福派送中，</span>
+        <span>任選一份今日 Buff，點一下領取 ✨</span>
+      </div>
       <div class="gridHold"><div class="grid4" id="grid4">
         <div class="badge" id="b1" role="button" tabindex="0"><div class="thumb"><img src="slot1.png" alt="能量瓶"></div></div>
         <div class="badge" id="b2" role="button" tabindex="0"><div class="thumb"><img src="slot2.png" alt="好天氣"></div></div>
@@ -120,7 +126,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
       <p id="sSub"></p>
     </div>
     <div class="play"><div class="bg" id="sBg"></div><div class="content" id="sContent"></div></div>
-    <div class="actions"><button class="btn" id="sClose">✨ pika~</button></div>
+    <div class="actions"><button class="btn" id="sClose">✨ pika～ close</button></div>
   </div>
 </div>
 
@@ -191,9 +197,11 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 
   // ===== Bottom sheet helpers =====
   const sheet=$("#sheet"), sBg=$("#sBg"), sTitle=$("#sTitle"), sSub=$("#sSub"), sContent=$("#sContent"), sClose=$("#sClose");
-  function openSheet(bg,title,sub,builder){
+  function openSheet(opts){
+    const {bg, title, sub, builder, titleHTML} = opts;
     sBg.style.backgroundImage="url('"+bg+"?v="+bust+"')";
-    sTitle.textContent=title; sSub.textContent=sub;
+    if(titleHTML){ sTitle.innerHTML = titleHTML; } else { sTitle.textContent = title; }
+    sSub.textContent=sub;
     sContent.innerHTML=""; builder(sContent);
     sheet.classList.add("show");
   }
@@ -206,7 +214,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   const on=(el,fn)=>{ ["pointerup","click","touchend","keydown"].forEach(evt=>{ el.addEventListener(evt,(e)=>{ if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return; e.preventDefault(); fn(e); }, {passive:false}); }); };
   const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
 
-  // bind tiles robustly
   function bindTile(id, cb){
     const tile=document.getElementById(id);
     if(!tile) return;
@@ -216,47 +223,81 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   }
 
   // A 能量瓶
-  bindTile("b1", ()=>openSheet("slot1.png","今天電量不足？充電站啟動 ⚡️","輕點一下，幫你回充精神與好心情。",(box)=>{
-    const tip=document.createElement("div"); tip.textContent="輕點畫面充電 →"; tip.style.opacity=".8";
-    const pbar=document.createElement("div"); pbar.className="pbar"; const fill=document.createElement("div"); fill.className="fill"; pbar.appendChild(fill);
-    const full=document.createElement("div"); full.className="fullTag"; full.textContent="滿格！";
-    box.append(tip, pbar, full);
-    let clicks=0, lock=false;
-    on(box, ()=>{
-      if(lock) return; lock=true;
-      requestAnimationFrame(()=> fill.style.width="100%");
-      setTimeout(()=>{ fill.style.width="0"; lock=false; }, 1100);
-      clicks++; if(clicks%3===0){ full.style.display="inline-block"; burst(box,12); toast("已補滿，出發吧！"); setTimeout(()=>{ full.style.display="none"; }, 900); }
-    });
+  bindTile("b1", ()=>openSheet({
+    bg:"slot1.png",
+    title:"今天電量不足？充電站啟動 ⚡️",
+    sub:"輕點一下，幫你回充精神與好心情。",
+    builder:(box)=>{
+      const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點畫面充電 →";
+      const pbar=document.createElement("div"); pbar.className="pbar"; const fill=document.createElement("div"); fill.className="fill"; pbar.appendChild(fill);
+      const full=document.createElement("div"); full.className="fullTag"; full.textContent="滿格！";
+      box.append(tip, pbar, full);
+      let clicks=0, lock=false;
+      on(box, ()=>{
+        if(lock) return; lock=true;
+        requestAnimationFrame(()=> fill.style.width="100%");
+        setTimeout(()=>{ fill.style.width="0"; lock=false; }, 1100);
+        clicks++;
+        if(clicks===1){ tip.textContent="再連點 2 下會觸發『滿格』小彩蛋 ✨"; }
+        if(clicks%3===0){ full.style.display="inline-block"; burst(box,12); toast("已補滿，出發吧！"); setTimeout(()=>{ full.style.display="none"; }, 900); }
+      });
+    }
   }));
 
   // B 天氣
-  bindTile("b2", ()=>openSheet("slot2.png","天氣系統連線中…今日晴朗指數提升，心情放晴！ 🌈","不論晴雨，願你處處順心。",(box)=>{
-    const tip=document.createElement("div"); tip.textContent="輕點畫面切換天氣 →"; tip.style.opacity=".8";
-    const face=document.createElement("div"); face.className="face"; face.textContent="🌥️";
-    const stamp=document.createElement("div"); stamp.className="stamp"; stamp.textContent="+1 順利";
-    box.append(tip, face, stamp);
-    const S=["🌥️","☀️","🌈"]; let i=0;
-    on(box, ()=>{ i=(i+1)%S.length; face.textContent=S[i]; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 850); if(S[i]==="🌈") burst(box,12); });
+  bindTile("b2", ()=>openSheet({
+    bg:"slot2.png",
+    titleHTML:'天氣系統連線中…<span class="only-mobile"><br></span>今日晴朗指數提升，心情放晴！ 🌈',
+    sub:"不論晴雨，願你處處順心。",
+    builder:(box)=>{
+      const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點畫面切換天氣 →";
+      const face=document.createElement("div"); face.className="face"; face.textContent="🌥️";
+      const stamp=document.createElement("div"); stamp.className="stamp"; stamp.textContent="+1 順利";
+      box.append(tip, face, stamp);
+      const S=["🌥️","☀️","🌈"]; let i=0;
+      on(box, ()=>{ i=(i+1)%S.length; face.textContent=S[i];
+        if(i===1){ tip.textContent="再點一次看看，會出現彩虹喔！"; }
+        stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 850);
+        if(S[i]==="🌈") burst(box,12);
+      });
+    }
   }));
 
   // C 花束
-  bindTile("b3", ()=>openSheet("slot3.png","送你一束今日的好運 💐","把好運綁成一束，突發狀況防護罩 ON 🍀。",(box)=>{
-    const tip=document.createElement("div"); tip.textContent="連點 3 下升級花束 →"; tip.style.opacity=".8";
-    const face=document.createElement("div"); face.className="face"; face.textContent="✨";
-    const shield=document.createElement("div"); shield.className="shield"; shield.textContent="🍀 抵禦突發";
-    box.append(tip, face, shield);
-    const V=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}]; let k=-1,c=0;
-    on(box, ()=>{ c++; if(c%3===0){ k=(k+1)%V.length; face.textContent=V[k].e; shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,10); toast("花束升級："+V[k].l); setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 900); } });
+  bindTile("b3", ()=>openSheet({
+    bg:"slot3.png",
+    title:"送你一束今日的好運 💐",
+    sub:"把好運綁成一束，突發狀況防護罩 ON 🍀。",
+    builder:(box)=>{
+      const tip=document.createElement("div"); tip.className="hint"; tip.textContent="連點 3 下升級花束 →";
+      const face=document.createElement("div"); face.className="face"; face.textContent="✨";
+      const shield=document.createElement("div"); shield.className="shield"; shield.textContent="🍀 抵禦突發";
+      box.append(tip, face, shield);
+      const V=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}]; let k=-1,c=0;
+      on(box, ()=>{ c++; if(c===1){ tip.textContent="再點 2 下就升級；每 3 次會換一種風格 ✨"; }
+        if(c%3===0){ k=(k+1)%V.length; face.textContent=V[k].e; shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,10); toast("花束升級："+V[k].l); setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 900); } });
+    }
   }));
 
-  // D 禮物
-  bindTile("b4", ()=>openSheet("slot4.png","這份小禮物，裝著萬分感謝 ✨❤️","謝謝你，願好事不斷發生。",(box)=>{
-    const tip=document.createElement("div"); tip.textContent="點一下開盒，再點看小紙條 →"; tip.style.opacity=".8";
-    const g=document.createElement("div"); g.className="box"; g.innerHTML='<div class="lid"></div><div class="ribbonY"></div><div class="burst">✨💖✨</div><div class="note">博皓學長，謝謝你！</div>';
-    box.append(tip, g);
-    let opened=false, noteOnce=false;
-    on(box, ()=>{ if(!opened){ opened=true; g.classList.add("open"); burst(box,14); } else { opened=false; g.classList.remove("open"); if(!noteOnce){ noteOnce=true; const note=g.querySelector(".note"); note.style.opacity=1; note.style.top="-64px"; setTimeout(()=>{ note.style.opacity=0; note.style.top="-48px"; }, 600); } } });
+  // D 禮物：使用 slot4.png 圖像 + 動畫
+  bindTile("b4", ()=>openSheet({
+    bg:"slot4.png",
+    title:"這份小禮物，裝著萬分感謝 ✨❤️",
+    sub:"謝謝你，願好事不斷發生。",
+    builder:(box)=>{
+      const tip=document.createElement("div"); tip.className="hint"; tip.textContent="點一下開盒（發光特效），再點看小紙條 →";
+      const wrap=document.createElement("div"); wrap.className="giftWrap";
+      const img=document.createElement("img"); img.className="giftImg"; img.src="slot4.png?v="+bust; img.alt="禮物";
+      const note=document.createElement("div"); note.className="giftNote"; note.textContent="博皓學長，謝謝你！";
+      wrap.append(img,note);
+      box.append(tip, wrap);
+      let step=0, noted=false;
+      on(box, ()=>{
+        step++;
+        if(step===1){ img.classList.remove("giftGlow"); void img.offsetWidth; img.classList.add("giftGlow"); burst(wrap,14); tip.textContent="再點一次會跳出小紙條 ✨"; }
+        else { if(!noted){ noted=true; note.style.opacity=1; note.style.top="-64px"; setTimeout(()=>{ note.style.opacity=0; note.style.top="-50px"; }, 700); tip.textContent="已看過小紙條，可以關閉或再玩一次～"; } else { img.classList.remove("giftGlow"); step=0; } }
+      });
+    }
   }));
 
   // first paint layout
