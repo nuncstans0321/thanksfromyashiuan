@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.4.0</title>
+<title>感謝卡 — v9.4.2</title>
 <style>
 :root{--r:22px;--card:#f2f3f5;--ink:#1f2328;--gap:12px}
 *{box-sizing:border-box}html,body{height:100%}
@@ -23,21 +23,25 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .gridArea{height:100%;display:grid;grid-template-rows:auto 1fr;gap:var(--gap)}
 .banner{display:flex;gap:.5em;justify-content:center;align-items:center;background:#fff7d9;border:1px solid #f2c94c;border-radius:12px;padding:10px;font-weight:900}
 .gridHold{position:relative}
-.grid4{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:var(--gap)}
-.badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:8px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);outline:0;touch-action:manipulation;display:grid;grid-template-rows:1fr auto;min-height:0}
+.grid4{position:absolute;inset:0;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:var(--gap);z-index:1}
+.badge{background:#fff;border:1px solid #0001;border-radius:14px;padding:8px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.06);outline:0;touch-action:manipulation;display:grid;grid-template-rows:1fr;min-height:0}
 .badge:focus{box-shadow:0 0 0 3px #3b82f6aa}
 .thumb{width:100%;height:100%;border-radius:10px;overflow:hidden;background:#fff;display:grid;place-items:center}
 .thumb img{width:100%;height:100%;object-fit:contain;display:block}
-/* modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;place-items:center;z-index:80;padding:16px}
-.modal.show{display:grid}
-.mcard{width:min(720px,92vw);max-height:90svh;background:#fff;border-radius:18px;box-shadow:0 18px 48px rgba(0,0,0,.35);display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
-.mhead{padding:14px 18px;border-bottom:1px solid #eee}
-.mhead h3{margin:0 0 6px 0;font-size:20px}
-.mhead p{margin:0;color:#555}
-.mplay{position:relative;background:#0f1220;display:grid;place-items:center;min-height:240px}
-.mplay .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.28;filter:blur(2px)}
-.mplay .content{position:relative;padding:14px;color:#fff;display:grid;gap:12px;justify-items:center}
+/* Bottom Sheet (mobile) / Modal (desktop) */
+.sheet{position:fixed;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .28s ease;z-index:120;display:grid;justify-items:center}
+.sheet.show{transform:translateY(0)}
+.sheet .scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);}
+.sheet .panel{position:relative;width:min(720px,96vw);max-height:70svh;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -18px 48px rgba(0,0,0,.35);padding:14px 16px 16px 16px;display:grid;grid-template-rows:auto 1fr auto;gap:8px}
+@media (min-width:720px){.sheet .panel{border-radius:18px;max-height:80svh;margin-bottom:4vh}}
+.sheet h3{margin:0 0 6px 0;font-size:20px}
+.sheet p{margin:0;color:#555}
+.play{position:relative;background:#0f1220;border-radius:12px;display:grid;place-items:center;min-height:220px;overflow:hidden}
+.play .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.28;filter:blur(2px)}
+.play .content{position:relative;padding:14px;color:#fff;display:grid;gap:12px;justify-items:center}
+.sheet .actions{display:flex;justify-content:center}
+.sheet .btn{border:1px solid #0002;background:#ffd24a;border-radius:999px;padding:.6rem 1.0rem;font-weight:800;cursor:pointer}
+/* Widgets */
 .pbar{width:min(520px,80%);height:12px;border:1px solid #2f3a5d;background:#0f1220;border-radius:999px;overflow:hidden}
 .fill{width:0;height:100%;background:linear-gradient(90deg,#5146ff,#ffd54a);transition:width 1.1s}
 .fullTag{display:none;margin-top:6px;background:#2a233f;color:#fff;font-size:12px;padding:4px 10px;border-radius:999px}
@@ -50,12 +54,17 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .burst{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-size:28px;opacity:0;transition:.35s}
 .note{position:absolute;left:50%;top:-48px;transform:translateX(-50%);background:#fff;color:#333;padding:6px 10px;border-radius:8px;font-size:12px;font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.35);opacity:0;transition:.25s}
 .open .lid{transform:rotate(-22deg) translateY(-6px)}.open .burst{opacity:1;transform:translateX(-50%) translateY(-6px)}
-.mfoot{padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:center}
-.btn{border:1px solid #0002;background:#ffd24a;border-radius:999px;padding:.6rem 1.0rem;font-weight:800;cursor:pointer}
+/* P4: much softer overlay, no box */
+#overlay{position:absolute;inset:0;display:none;place-items:center;background:radial-gradient(60% 60% at 50% 60%, rgba(0,0,0,.45), rgba(0,0,0,.18));backdrop-filter:blur(1.5px);z-index:70}
+.finalWrap{display:grid;gap:16px;justify-items:center}
+.finalWrap .jp{color:#fff;font-weight:900;font-size:clamp(24px,7.2vw,46px);text-shadow:0 3px 18px rgba(0,0,0,.5),0 1px 0 rgba(0,0,0,.25)}
+.finalBtns{display:flex;gap:10px}
+.finalBtns .btn{border:1px solid #0002;background:rgba(255,210,74,.95);border-radius:999px;padding:.6rem 1.0rem;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.finalBtns .ghost{background:rgba(255,255,255,.92)}
 /* Toast / spark */
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1e2433;border:1px solid #334063;color:#e8ebff;padding:8px 12px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:90}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1e2433;border:1px solid #334063;color:#e8ebff;padding:8px 12px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:140}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
-.spark{position:fixed;font-size:18px;animation:rise .65s ease-out forwards;pointer-events:none;z-index:85}
+.spark{position:fixed;font-size:18px;animation:rise .65s ease-out forwards;pointer-events:none;z-index:135}
 @keyframes rise{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-26px) scale(1.2);opacity:0}}
 </style>
 </head><body>
@@ -89,12 +98,12 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   <!-- p4 -->
   <section class="page" id="p4">
     <div class="vbox" id="finalBox"><video id="vFinale" playsinline webkit-playsinline muted preload="auto"><source id="sFinale" src="finale.mp4" type="video/mp4"></video>
-      <div id="overlay" style="position:absolute;inset:0;display:none;place-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.5),rgba(0,0,0,.35));z-index:40">
-        <div class="overlay-card" style="background:#fff;border-radius:16px;padding:18px 22px;box-shadow:0 14px 40px rgba(0,0,0,.35);text-align:center">
-          <div class="jp" style="font-weight:900;font-size:clamp(22px,6.8vw,42px);margin-bottom:8px;">ありがとうございます</div>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
+      <div id="overlay">
+        <div class="finalWrap">
+          <div class="jp">ありがとうございます</div>
+          <div class="finalBtns">
             <button class="btn" id="againBtn">再一次</button>
-            <button class="btn" id="shareBtn" style="background:#fff">分享</button>
+            <button class="btn ghost" id="shareBtn">分享</button>
           </div>
         </div>
       </div>
@@ -102,12 +111,16 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   </section>
 </div></div>
 
-<!-- modal for p3 -->
-<div class="modal" id="modal">
-  <div class="mcard">
-    <div class="mhead"><h3 id="mTitle"></h3><p id="mSub"></p></div>
-    <div class="mplay"><div class="bg" id="mBg"></div><div class="content" id="mContent"></div></div>
-    <div class="mfoot"><button class="btn" id="mClose">✨ pika~</button></div>
+<!-- bottom sheet for p3 -->
+<div class="sheet" id="sheet">
+  <div class="scrim"></div>
+  <div class="panel">
+    <div>
+      <h3 id="sTitle"></h3>
+      <p id="sSub"></p>
+    </div>
+    <div class="play"><div class="bg" id="sBg"></div><div class="content" id="sContent"></div></div>
+    <div class="actions"><button class="btn" id="sClose">✨ pika~</button></div>
   </div>
 </div>
 
@@ -165,7 +178,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   function layoutP3(){
     const p3=$("#p3"), banner=p3.querySelector(".banner"), hold=p3.querySelector(".gridHold"), grid=p3.querySelector(".grid4");
     const gap=parseFloat(getComputedStyle(grid).gap)||12;
-    const reserved=90; // next btn & breathing
+    const reserved=90; // for next btn
     const availH = p3.clientHeight - banner.offsetHeight - gap - reserved;
     const availW = hold.clientWidth;
     const tileW = Math.floor((availW - gap)/2);
@@ -176,66 +189,78 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   }
   addEventListener("resize", layoutP3); setTimeout(layoutP3, 60);
 
-  // ===== Modal helpers =====
-  const modal=$("#modal"), mTitle=$("#mTitle"), mSub=$("#mSub"), mBg=$("#mBg"), mContent=$("#mContent"), mClose=$("#mClose");
-  function openModal(bg, title, sub, builder){
-    mBg.style.backgroundImage = "url('"+bg+"?v="+bust+"')";
-    mTitle.textContent = title; mSub.textContent = sub;
-    mContent.innerHTML = ""; // reset
-    builder(mContent);
-    modal.classList.add("show");
+  // ===== Bottom sheet helpers =====
+  const sheet=$("#sheet"), sBg=$("#sBg"), sTitle=$("#sTitle"), sSub=$("#sSub"), sContent=$("#sContent"), sClose=$("#sClose");
+  function openSheet(bg,title,sub,builder){
+    sBg.style.backgroundImage="url('"+bg+"?v="+bust+"')";
+    sTitle.textContent=title; sSub.textContent=sub;
+    sContent.innerHTML=""; builder(sContent);
+    sheet.classList.add("show");
   }
-  mClose.addEventListener("click", ()=> modal.classList.remove("show"));
+  function closeSheet(){ sheet.classList.remove("show"); }
+  sClose.addEventListener("click", closeSheet);
+  sheet.querySelector(".scrim").addEventListener("click", closeSheet);
 
+  // helpers
   function toast(msg){ t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 1200); }
-  const on=(el,fn)=>{ ["pointerup","click","keydown"].forEach(evt=>{ el.addEventListener(evt,(e)=>{ if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return; e.preventDefault(); fn(e); }, {passive:false}); }); };
+  const on=(el,fn)=>{ ["pointerup","click","touchend","keydown"].forEach(evt=>{ el.addEventListener(evt,(e)=>{ if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return; e.preventDefault(); fn(e); }, {passive:false}); }); };
   const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
 
-  // Event delegation for grid clicks
-  $("#grid4").addEventListener("click",(e)=>{
-    const tile=e.target.closest(".badge"); if(!tile) return;
-    const id=tile.id;
-    if(id==="b1"){ // 能量瓶
-      openModal("slot1.png","今天電量不足？充電站啟動 ⚡️","輕點一下，幫你回充精神與好心情。",(box)=>{
-        const pbar=document.createElement("div"); pbar.className="pbar"; const fill=document.createElement("div"); fill.className="fill"; pbar.appendChild(fill);
-        const full=document.createElement("div"); full.className="fullTag"; full.textContent="滿格！";
-        box.append(pbar, full);
-        let clicks=0, lock=false;
-        on(box, ()=>{
-          if(lock) return; lock=true;
-          requestAnimationFrame(()=> fill.style.width="100%");
-          setTimeout(()=>{ fill.style.width="0"; lock=false; }, 1100);
-          clicks++; if(clicks%3===0){ full.style.display="inline-block"; burst(box,12); toast("已補滿，出發吧！"); setTimeout(()=>{ full.style.display="none"; }, 900); }
-        });
-      });
-    }else if(id==="b2"){ // 天氣
-      openModal("slot2.png","天氣系統連線中…今日晴朗指數提升，心情放晴！ 🌈","不論晴雨，願你處處順心。",(box)=>{
-        const face=document.createElement("div"); face.className="face"; face.textContent="🌥️";
-        const stamp=document.createElement("div"); stamp.className="stamp"; stamp.textContent="+1 順利";
-        box.append(face, stamp);
-        const S=["🌥️","☀️","🌈"]; let i=0;
-        on(box, ()=>{ i=(i+1)%S.length; face.textContent=S[i]; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 850); if(S[i]==="🌈") burst(box,12); });
-      });
-    }else if(id==="b3"){ // 花束
-      openModal("slot3.png","送你一束今日的好運 💐","把好運綁成一束，突發狀況防護罩 ON 🍀。",(box)=>{
-        const face=document.createElement("div"); face.className="face"; face.textContent="✨";
-        const shield=document.createElement("div"); shield.className="shield"; shield.textContent="🍀 抵禦突發";
-        box.append(face, shield);
-        const V=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}]; let k=-1,c=0;
-        on(box, ()=>{ c++; if(c%3===0){ k=(k+1)%V.length; face.textContent=V[k].e; shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,10); toast("花束升級："+V[k].l); setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 900); } });
-      });
-    }else if(id==="b4"){ // 禮物
-      openModal("slot4.png","這份小禮物，裝著萬分感謝 ✨❤️","謝謝你，願好事不斷發生。",(box)=>{
-        const g=document.createElement("div"); g.className="box"; g.innerHTML='<div class="lid"></div><div class="ribbonY"></div><div class="burst">✨💖✨</div><div class="note">博皓學長，謝謝你！</div>';
-        box.append(g);
-        let opened=false, noteOnce=false;
-        on(box, ()=>{ if(!opened){ opened=true; g.classList.add("open"); burst(box,14); } else { opened=false; g.classList.remove("open"); if(!noteOnce){ noteOnce=true; const note=g.querySelector(".note"); note.style.opacity=1; note.style.top="-64px"; setTimeout(()=>{ note.style.opacity=0; note.style.top="-48px"; }, 600); } } });
-      });
-    }
-  });
+  // bind tiles robustly
+  function bindTile(id, cb){
+    const tile=document.getElementById(id);
+    if(!tile) return;
+    ["click","pointerup","touchend"].forEach(evt=>tile.addEventListener(evt,(e)=>{e.preventDefault(); cb();},{passive:false}));
+    const img=tile.querySelector("img");
+    if(img) ["click","pointerup","touchend"].forEach(evt=>img.addEventListener(evt,(e)=>{e.preventDefault(); cb();},{passive:false}));
+  }
 
-  // utility toast
-  function toast(msg){ t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 1200); }
+  // A 能量瓶
+  bindTile("b1", ()=>openSheet("slot1.png","今天電量不足？充電站啟動 ⚡️","輕點一下，幫你回充精神與好心情。",(box)=>{
+    const tip=document.createElement("div"); tip.textContent="輕點畫面充電 →"; tip.style.opacity=".8";
+    const pbar=document.createElement("div"); pbar.className="pbar"; const fill=document.createElement("div"); fill.className="fill"; pbar.appendChild(fill);
+    const full=document.createElement("div"); full.className="fullTag"; full.textContent="滿格！";
+    box.append(tip, pbar, full);
+    let clicks=0, lock=false;
+    on(box, ()=>{
+      if(lock) return; lock=true;
+      requestAnimationFrame(()=> fill.style.width="100%");
+      setTimeout(()=>{ fill.style.width="0"; lock=false; }, 1100);
+      clicks++; if(clicks%3===0){ full.style.display="inline-block"; burst(box,12); toast("已補滿，出發吧！"); setTimeout(()=>{ full.style.display="none"; }, 900); }
+    });
+  }));
+
+  // B 天氣
+  bindTile("b2", ()=>openSheet("slot2.png","天氣系統連線中…今日晴朗指數提升，心情放晴！ 🌈","不論晴雨，願你處處順心。",(box)=>{
+    const tip=document.createElement("div"); tip.textContent="輕點畫面切換天氣 →"; tip.style.opacity=".8";
+    const face=document.createElement("div"); face.className="face"; face.textContent="🌥️";
+    const stamp=document.createElement("div"); stamp.className="stamp"; stamp.textContent="+1 順利";
+    box.append(tip, face, stamp);
+    const S=["🌥️","☀️","🌈"]; let i=0;
+    on(box, ()=>{ i=(i+1)%S.length; face.textContent=S[i]; stamp.style.opacity=1; stamp.style.transform="scale(1)"; setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 850); if(S[i]==="🌈") burst(box,12); });
+  }));
+
+  // C 花束
+  bindTile("b3", ()=>openSheet("slot3.png","送你一束今日的好運 💐","把好運綁成一束，突發狀況防護罩 ON 🍀。",(box)=>{
+    const tip=document.createElement("div"); tip.textContent="連點 3 下升級花束 →"; tip.style.opacity=".8";
+    const face=document.createElement("div"); face.className="face"; face.textContent="✨";
+    const shield=document.createElement("div"); shield.className="shield"; shield.textContent="🍀 抵禦突發";
+    box.append(tip, face, shield);
+    const V=[{e:"💪",l:"元氣"},{e:"🫶",l:"溫柔"},{e:"🌟",l:"閃亮"}]; let k=-1,c=0;
+    on(box, ()=>{ c++; if(c%3===0){ k=(k+1)%V.length; face.textContent=V[k].e; shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,10); toast("花束升級："+V[k].l); setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 900); } });
+  }));
+
+  // D 禮物
+  bindTile("b4", ()=>openSheet("slot4.png","這份小禮物，裝著萬分感謝 ✨❤️","謝謝你，願好事不斷發生。",(box)=>{
+    const tip=document.createElement("div"); tip.textContent="點一下開盒，再點看小紙條 →"; tip.style.opacity=".8";
+    const g=document.createElement("div"); g.className="box"; g.innerHTML='<div class="lid"></div><div class="ribbonY"></div><div class="burst">✨💖✨</div><div class="note">博皓學長，謝謝你！</div>';
+    box.append(tip, g);
+    let opened=false, noteOnce=false;
+    on(box, ()=>{ if(!opened){ opened=true; g.classList.add("open"); burst(box,14); } else { opened=false; g.classList.remove("open"); if(!noteOnce){ noteOnce=true; const note=g.querySelector(".note"); note.style.opacity=1; note.style.top="-64px"; setTimeout(()=>{ note.style.opacity=0; note.style.top="-48px"; }, 600); } } });
+  }));
+
+  // first paint layout
+  setTimeout(layoutP3, 0);
 })();
 </script>
 </body></html>
