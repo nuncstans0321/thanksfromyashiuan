@@ -1,12 +1,12 @@
 <!DOCTYPE html><html lang="zh-Hant"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>感謝卡 — v9.4.11</title>
+<title>感謝卡 — v9.4.12</title>
 <style>
-:root{--r:22px;--card:#f2f3f5;--ink:#1f2328;--gap:12px}
+:root{--r:22px;--gap:12px}
 *{box-sizing:border-box}html,body{height:100%}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:#0e0e10;color:var(--ink);display:flex;align-items:center;justify-content:center;overflow:hidden}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:#0e0e10;color:#1f2328;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .stage{width:min(980px,96vw);height:min(780px,96svh)}@supports not (height:1svh){.stage{height:min(780px,96vh)}}
-.card{position:relative;width:100%;height:100%;background:var(--card);border-radius:var(--r);overflow:hidden;box-shadow:0 28px 60px rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.12),inset 0 0 0 1px rgba(0,0,0,.08)}
+.card{position:relative;width:100%;height:100%;background:#f2f3f5;border-radius:var(--r);overflow:hidden;box-shadow:0 28px 60px rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.12),inset 0 0 0 1px rgba(0,0,0,.08)}
 .page{position:absolute;inset:0;padding:20px;display:grid;place-items:center;opacity:0;transform:translateY(8px);transition:.3s}
 .page.active{opacity:1;transform:none}
 #p1,#p2,#p4{padding:0}
@@ -37,10 +37,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 @media (min-width:720px){.sheet .panel{border-radius:18px;max-height:82svh;margin-bottom:4vh}}
 .sheet h3{margin:0 0 6px 0;font-size:20px}
 .sheet p{margin:0;color:#555}
-.play{position:relative;background:#0f1220;border-radius:12px;display:grid;place-items:center;min-height:260px;overflow:hidden}
+.play{position:relative;background:#0f1220;border-radius:12px;display:grid;place-items:center;min-height:280px;overflow:hidden}
 .play .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.28;filter:blur(2px)}
-.play .content{position:relative;padding:16px;color:#fff;display:grid;gap:16px;justify-items:center}
-.hint{font-size:12px;opacity:.9;text-align:center}
+.play .content{position:relative;padding:16px;color:#fff;display:grid;gap:16px;justify-items:center;z-index:4;text-shadow:0 1px 4px rgba(0,0,0,.45)}
+.hint{font-size:12px;opacity:.95;text-align:center}
 .sheet .actions{display:flex;justify-content:center}
 .sheet .btn{border:1px solid #0002;background:#ffd24a;border-radius:999px;padding:.6rem 1.0rem;font-weight:800;cursor:pointer}
 /* Widgets */
@@ -49,12 +49,12 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .face{font-size:60px}
 .stamp{margin-top:6px;border:2px dashed #7ec3ff;color:#7ec3ff;font-weight:800;border-radius:8px;padding:4px 8px;opacity:0;transform:scale(.9);transition:.3s}
 .shield{background:#24352a;color:#bff5cf;border:1px solid #3e6b4f;border-radius:10px;padding:6px 10px;opacity:0;transform:translateY(6px);transition:.3s}
-/* Battery HUD (fit inside sheet) */
-.hud{position:absolute;inset:0;display:none;place-items:center;pointer-events:none;z-index:3;text-align:center;padding:10px}
+/* Battery HUD */
+.hud{position:absolute;inset:4% 2% 16% 2%;display:none;place-items:center;pointer-events:none;z-index:3;text-align:center;padding:10px}
 .hud .wrap{width:100%;display:grid;justify-items:center;gap:10px}
-.hud img{max-width:92%;height:auto;max-height:62%;object-fit:contain;display:block;filter:drop-shadow(0 12px 28px rgba(0,0,0,.55))}
-.battery{display:grid;gap:6px;justify-items:center;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));width:92%}
-.b-cell{width:100%;aspect-ratio:2.4/1;border:5px solid #9bd2ff;border-radius:16px;position:relative;background:rgba(0,0,0,.3);overflow:hidden}
+.hud img{max-width:100%;max-height:70%;object-fit:contain;display:block;filter:drop-shadow(0 12px 28px rgba(0,0,0,.55))}
+.battery{display:grid;gap:10px;justify-items:center;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));width:96%}
+.b-cell{width:100%;aspect-ratio:2.4/1;border:6px solid #9bd2ff;border-radius:16px;position:relative;background:rgba(0,0,0,.3);overflow:hidden}
 .b-cell:after{content:"";position:absolute;right:-18px;top:calc(50% - 18px);width:18px;height:36px;background:#9bd2ff;border-radius:4px}
 .b-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#1ee3ff,#7cffc9);box-shadow:inset 0 0 10px rgba(255,255,255,.35);transition:width .6s;border-right:4px solid rgba(255,255,255,.6)}
 .b-label{font-weight:900;font-size:clamp(18px,3vw,28px);color:#d7f6ff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
@@ -73,16 +73,14 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .finalBtns .btn{border:1px solid #0002;background:rgba(255,210,74,.96);border-radius:999px;padding:.6rem 1.0rem;font-weight:800;box-shadow:0 8px 20px rgba(0,0,0,.25);cursor:pointer}
 .finalBtns .ghost{background:rgba(255,255,255,.92)}
 /* Particles */
-.petal,.ray,.confetti{position:absolute;pointer-events:none;opacity:0;animation-fill-mode:forwards}
+.petal,.ray,.confetti,.sparkle{position:absolute;pointer-events:none;opacity:0;animation-fill-mode:forwards}
 @keyframes petalFall{0%{transform:translateY(-10px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(120px) rotate(260deg);opacity:0}}
 @keyframes sunRay{from{transform:rotate(var(--r)) translateY(0);opacity:.9}to{transform:rotate(calc(var(--r) + 20deg)) translateY(-8px);opacity:0}}
 @keyframes conf{from{transform:translateY(0) rotate(0);opacity:1}to{transform:translateY(-26px) rotate(90deg);opacity:0}}
-/* Toast / spark */
+@keyframes sp{from{transform:translateY(0) scale(.9);opacity:0}10%{opacity:1}to{transform:translateY(-18px) scale(1.1);opacity:0}}
+/* Toast */
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1e2433;border:1px solid #334063;color:#e8ebff;padding:8px 12px;border-radius:10px;opacity:0;transition:.25s;pointer-events:none;z-index:140}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px)}
-.spark{position:fixed;font-size:18px;animation:rise .65s ease-out forwards;pointer-events:none;z-index:135}
-@keyframes rise{from{transform:translateY(0) scale(1);opacity:1}to{transform:translateY(-26px) scale(1.2);opacity:0}}
-.only-mobile{display:none}@media (max-width:520px){.only-mobile{display:inline}}
 </style>
 </head><body>
 <div class="stage"><div class="card">
@@ -108,8 +106,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
       </div>
       <div class="gridHold"><div class="grid4" id="grid4">
         <div class="badge" id="b1" role="button" tabindex="0"><div class="thumb"><img src="slot1.png" alt="能量瓶"></div></div>
-        <div class="badge" id="b2" role="button" tabindex="0"><div class="thumb"><img src="slot2.png" alt="右上（花束效果）"></div></div>
-        <div class="badge" id="b3" role="button" tabindex="0"><div class="thumb"><img src="slot3.png" alt="左下（天氣效果）"></div></div>
+        <div class="badge" id="b2" role="button" tabindex="0"><div class="thumb"><img src="slot2.png" alt="右上（花束）"></div></div>
+        <div class="badge" id="b3" role="button" tabindex="0"><div class="thumb"><img src="slot3.png" alt="左下（好天氣）"></div></div>
         <div class="badge" id="b4" role="button" tabindex="0"><div class="thumb"><img src="slot4.png" alt="禮物"></div></div>
       </div></div>
     </div>
@@ -185,7 +183,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   sheet.querySelector(".scrim").addEventListener("click", closeSheet);
 
   const on=(el,fn)=>{ ["pointerup","click","touchend","keydown"].forEach(evt=>{ el.addEventListener(evt,(e)=>{ if(e.type==="keydown" && !["Enter"," "].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); fn(e); }, {passive:false}); }); };
-  const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="spark";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";document.body.appendChild(s);setTimeout(()=>s.remove(),700);}};
+  const burst=(el,n=10)=>{const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="sparkle";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";s.style.animation="sp .8s ease-out forwards";document.body.appendChild(s);setTimeout(()=>s.remove(),850);}};
 
   function bindTile(id, cb){
     const tile=document.getElementById(id);
@@ -195,7 +193,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     if(img) ["click","pointerup","touchend"].forEach(evt=>img.addEventListener(evt,(e)=>{e.preventDefault(); e.stopPropagation(); cb();},{passive:false}));
   }
 
-  // ===== A 能量瓶：條→80%→100%（100% 持續；清掉任何舊計時器） =====
+  // ===== A 能量瓶：條→80%→100%（100% 持續；圖片置中放大、不遮文字） =====
   bindTile("b1", ()=>openSheet({
     bg:"slot1.png",
     title:"今天電量不足？充電站啟動 ⚡️",
@@ -222,7 +220,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
         const lab=document.createElement("div"); lab.className="b-label"; lab.textContent="⚡️ "+percent+"%";
         wrap.append(im, lab);
       }
-      function showHUD(persist=false, ms=1600){
+      function showHUD(persist=false, ms=1800){
         if(hudTimer){ clearTimeout(hudTimer); hudTimer=null; }
         hud.style.display="grid";
         if(!persist){ hudTimer=setTimeout(()=>{ hud.style.display="none"; hudTimer=null; }, ms); }
@@ -237,13 +235,13 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
           setTimeout(()=>{ fill.style.width="0"; lock=false; }, 1000);
         }else if(step===2){
           renderBatteryCSS(80);
-          showHUD(false, 2000);
+          showHUD(false, 2300);
           tip.textContent="最後一下：滿格！";
           setTimeout(()=>{ lock=false; }, 900);
         }else{
           renderBatteryCSS(100);
           showHUD(true);
-          if(window.B_AVAILABLE){ setTimeout(()=>renderBatteryIMG(100), 100); }
+          if(window.B_AVAILABLE){ setTimeout(()=>renderBatteryIMG(100), 80); }
           burst(box,14);
           tip.textContent="滿格！pika～關閉後可再玩，或換其他 Buff。";
           completed=true;
@@ -259,33 +257,33 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   // 檢查 B.png
   (function(){ const img=new Image(); img.onload=()=>window.B_AVAILABLE=true; img.onerror=()=>window.B_AVAILABLE=false; img.src="B.png?check="+bust; })();
 
-  // ===== 右上 b2 → 花束：花瓣雨稀疏化 =====
+  // ===== 右上 b2 → 花束：文案調整；第2步大花瓣雨，第3步護盾+強光暈+金粉 =====
   bindTile("b2", ()=>openSheet({
     bg:"slot2.png",
     title:"送你一束今日的好運 💐",
-    sub:"每一下都會升級，第三下啟動防護罩。",
+    sub:"每一下都會升級，完成後啟動防護罩。",
     builder:(box)=>{
       const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點看看 →";
-      const face=document.createElement("div"); face.className="face"; face.textContent="💮";
+      const face=document.createElement("div"); face.className="face"; face.textContent="🌸";
       const shield=document.createElement("div"); shield.className="shield"; shield.textContent="🍀 抵禦突發";
-      const halo=document.createElement("div"); halo.style.cssText="position:absolute;inset:0;margin:auto;width:min(520px,80%);max-height:72%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle, rgba(255,235,130,.6), rgba(255,235,130,.05) 60%, transparent 70%);filter:blur(2px);opacity:0;transition:opacity .35s;pointer-events:none;";
+      const halo=document.createElement("div"); halo.style.cssText="position:absolute;inset:0;margin:auto;width:min(520px,80%);max-height:72%;aspect-ratio:1/1;border-radius:50%;background:radial-gradient(circle, rgba(255,235,130,.8), rgba(255,235,130,.06) 60%, transparent 70%);filter:blur(2px);opacity:0;transition:opacity .35s;pointer-events:none;";
       box.append(tip, face, shield, halo);
-      const petals=()=>{ for(let i=0;i<6;i++){ const p=document.createElement('div'); p.className='petal'; p.textContent='🌸'; p.style.left=(Math.random()*70+15)+'%'; p.style.top='-8px'; p.style.fontSize=(Math.random()*10+16)+'px'; p.style.animation='petalFall 1.2s ease-in forwards'; p.style.animationDelay=(Math.random()*0.25)+'s'; box.appendChild(p); setTimeout(()=>p.remove(),1400);} };
+      const petals=(n=10)=>{ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='petal'; p.textContent='🌸'; p.style.left=(Math.random()*70+15)+'%'; p.style.top='-8px'; p.style.fontSize=(Math.random()*12+16)+'px'; p.style.animation='petalFall 1.3s ease-in forwards'; p.style.animationDelay=(Math.random()*0.25)+'s'; box.appendChild(p); setTimeout(()=>p.remove(),1500);} };
+      const glitter=()=>{ for(let i=0;i<12;i++){ const s=document.createElement('div'); s.className='sparkle'; s.textContent='✨'; s.style.left=(Math.random()*70+15)+'%'; s.style.top=(Math.random()*40+30)+'%'; s.style.animation='sp .9s ease-out forwards'; box.appendChild(s); setTimeout(()=>s.remove(),950);} };
       let step=0;
       on(box, ()=>{
-        step=(step%3)+1; petals();
-        if(step===1){ face.textContent="💖"; tip.textContent="再點點看"; burst(box,6); }
-        else if(step===2){ face.textContent="💐"; tip.textContent="再點點看"; burst(box,6); }
-        else{ face.textContent="🌟"; halo.style.opacity=1; setTimeout(()=>halo.style.opacity=0, 1100);
-          shield.style.opacity=1; shield.style.transform="translateY(0)"; burst(box,8);
-          setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; }, 1300);
+        step=(step%3)+1;
+        if(step===1){ face.textContent="💐"; petals(8); tip.textContent="再點點看"; burst(box,6); }
+        else if(step===2){ face.textContent="🌼"; petals(18); tip.textContent="再點點看"; burst(box,6); }
+        else{ face.textContent="🌟"; halo.style.opacity=1; shield.style.opacity=1; shield.style.transform="translateY(0)"; glitter(); burst(box,10);
+          setTimeout(()=>{ shield.style.opacity=0; shield.style.transform="translateY(6px)"; halo.style.opacity=0; }, 1400);
           tip.textContent="完成！可以再玩一次，或換其他 Buff。"; step=0;
         }
       });
     }
   }));
 
-  // ===== 左下 b3 → 天氣：保留光芒與 confetti =====
+  // ===== 左下 b3 → 天氣 =====
   bindTile("b3", ()=>openSheet({
     bg:"slot3.png",
     titleHTML:'天氣系統連線中…<span class="only-mobile"><br></span>今日晴朗指數提升，心情放晴！ 🌈',
@@ -307,7 +305,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     }
   }));
 
-  // ===== D 禮物（紙條文案改成 fighting!） =====
+  // ===== D 禮物（紙條文案 fighting!） =====
   bindTile("b4", ()=>openSheet({
     bg:"slot4.png",
     title:"這份小禮物，裝著萬分感謝 ✨❤️",
