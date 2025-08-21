@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>v9.4.iOS-P3 修正版（基於你附檔）</title>
+<title>v9.4.iOS-P3 修正版（基於你的 index_p3_ios_fix）</title>
 <style>
 :root{--r:22px;--gap:12px}
 *{box-sizing:border-box}html,body{height:100%}
@@ -56,10 +56,6 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 .hud{position:absolute;inset:4% 2% 16% 2%;display:none;place-items:center;pointer-events:none;z-index:3;text-align:center;padding:10px}
 .hud .wrap{width:100%;display:grid;justify-items:center;gap:10px}
 .hud img{max-width:100%;max-height:70%;object-fit:contain;display:block;filter:drop-shadow(0 12px 28px rgba(0,0,0,.55))}
-.battery{display:grid;gap:10px;justify-items:center;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));width:96%}
-.b-cell{width:100%;aspect-ratio:2.4/1;border:6px solid #9bd2ff;border-radius:16px;position:relative;background:rgba(0,0,0,.3);overflow:hidden}
-.b-cell:after{content:"";position:absolute;right:-18px;top:calc(50% - 18px);width:18px;height:36px;background:#9bd2ff;border-radius:4px}
-.b-fill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#1ee3ff,#7cffc9);box-shadow:inset 0 0 10px rgba(255,255,255,.35);transition:width .6s;border-right:4px solid rgba(255,255,255,.6)}
 .b-label{font-weight:900;font-size:clamp(18px,3vw,28px);color:#d7f6ff;text-shadow:0 2px 6px rgba(0,0,0,.35)}
 /* 禮物 */
 .giftWrap{position:relative;display:grid;place-items:center;padding-top:64px}
@@ -88,10 +84,12 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
 </head>
 <body>
 <div class="stage"><div class="card">
+  <!-- P1 -->
   <section class="page active" id="p1">
     <div class="vbox"><video id="vIntro" playsinline webkit-playsinline muted preload="auto" poster="poster.png"><source id="sIntro" src="envelope_open.mp4" type="video/mp4"></video></div>
     <button class="next" id="n1">下一頁</button>
   </section>
+  <!-- P2 -->
   <section class="page" id="p2">
     <div class="vbox">
       <div class="p2ribbon" id="ribbon">給博皓學長 ～ by 62 期學員亞璇</div>
@@ -99,6 +97,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     </div>
     <button class="next show" id="n2">下一頁</button>
   </section>
+  <!-- P3 -->
   <section class="page" id="p3">
     <div class="gridArea">
       <div class="banner">
@@ -114,6 +113,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
     </div>
     <button class="next show" id="n3">下一頁</button>
   </section>
+  <!-- P4 -->
   <section class="page" id="p4">
     <div class="vbox" id="finalBox">
       <video id="vFinale" playsinline webkit-playsinline muted preload="auto"><source id="sFinale" src="finale.mp4" type="video/mp4"></video>
@@ -130,11 +130,15 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   </section>
 </div></div>
 
+<!-- Bottom Sheet -->
 <div class="sheet" id="sheet">
   <div class="scrim"></div>
   <div class="panel">
     <div><h3 id="sTitle"></h3><p id="sSub"></p></div>
-    <div class="play"><div class="bg" id="sBg"></div><div class="content" id="sContent"></div></div>
+    <div class="play" id="playStage">
+      <div class="bg" id="sBg"></div>
+      <div class="content" id="sContent"></div>
+    </div>
     <div class="actions"><button class="btn" id="sClose">✨ pika～ 關閉</button></div>
   </div>
 </div>
@@ -152,7 +156,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   const n1=$("#n1"), n2=$("#n2"), n3=$("#n3");
   const v1=$("#vIntro"), v2=$("#vAscii"), v3=$("#vFinale");
 
-  // P1：播放完才顯示按鈕
+  // 保持你原本的流程：P1 播完才出現下一頁；P2 預設顯示；P3 預設顯示
   v1.play().catch(()=>{ v1.setAttribute("controls",""); });
   v1.addEventListener("ended", ()=>{ n1.classList.add("show"); });
   n1.addEventListener("click", ()=>{ show(1); v2.play().catch(()=>{ v2.setAttribute("controls",""); }); });
@@ -160,33 +164,50 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
   n2.addEventListener("click", ()=> show(2));
   n3.addEventListener("click", ()=>{ show(3); v3.play().catch(()=>{ v3.setAttribute("controls",""); }); });
 
-  /* ==== iPhone 超保險點擊方案（P3 專用） ====
-     - 只在 P3 grid 內生效
-     - touchstart + click 雙軌，touchstart 優先，短窗去重
-     - .sheet 未開時 pointer-events:none; visibility:hidden（CSS 已處理）
+  /* ==== iPhone 友善點擊（P3） ====
+     - 互動掛在 #playStage（整個舞台），避免子元素阻擋
+     - touchstart + click 雙軌 + 去重
   */
-  const grid=$("#grid4");
-  let lastT=0, lastEl=null, lock=false;
-  function notDup(el){ const now=Date.now(); if(lastEl===el && (now-lastT)<250) return false; lastEl=el; lastT=now; return true; }
-  function bindTap(el, handler){
-    el.addEventListener("touchstart", (e)=>{ if(lock) return; if(!notDup(el)) return; lock=true; e.preventDefault(); e.stopPropagation(); handler(e); setTimeout(()=>lock=false, 240); }, {passive:false});
-    el.addEventListener("click", (e)=>{ if(lock) return; if(!notDup(el)) return; lock=true; e.preventDefault(); e.stopPropagation(); handler(e); setTimeout(()=>lock=false, 240); }, {passive:false});
-  }
-
   const sheet=$("#sheet"), sBg=$("#sBg"), sTitle=$("#sTitle"), sSub=$("#sSub"), sContent=$("#sContent"), sClose=$("#sClose");
-  function openSheet(opts){ const {bg, title, sub, builder, titleHTML} = opts; sBg.style.backgroundImage="url('"+bg+"?v="+bust+"')"; if(titleHTML){ sTitle.innerHTML = titleHTML; } else { sTitle.textContent = title; } sSub.textContent=sub; sContent.innerHTML=""; builder(sContent); sheet.classList.add("show"); }
+  function openSheet(opts){
+    const {bg, title, sub, builder, titleHTML} = opts;
+    sBg.style.backgroundImage="url('"+bg+"?v="+bust+"')";
+    if(titleHTML){ sTitle.innerHTML = titleHTML; } else { sTitle.textContent = title; }
+    sSub.textContent=sub;
+    sContent.innerHTML="";
+    builder(sContent, setStageHandler);
+    sheet.classList.add("show");
+  }
   function closeSheet(){ sheet.classList.remove("show"); }
   sClose.addEventListener("click", closeSheet, {passive:true});
   sheet.querySelector(".scrim").addEventListener("click", closeSheet, {passive:true});
 
   function burst(el,n=10){const r=el.getBoundingClientRect();for(let i=0;i<n;i++){const s=document.createElement("div");s.className="sparkle";s.textContent=Math.random()>0.5?"✨":"⚡️";s.style.left=(r.left+r.width/2+(Math.random()*60-30))+"px";s.style.top=(r.top+r.height/2+(Math.random()*30-15))+"px";s.style.animation="sp .8s ease-out forwards";document.body.appendChild(s);setTimeout(()=>s.remove(),850);}}
 
-  // 綁定四格（圖與外層都能點）
+  function setStageHandler(handler){
+    // 重建舞台節點，清空舊 listener，避免重複觸發
+    const old = document.getElementById('playStage');
+    const fresh = old.cloneNode(true);
+    old.parentNode.replaceChild(fresh, old);
+    let locked=false, last=0;
+    const fire = (e)=>{
+      const now=Date.now();
+      if(locked || now-last<180) return;
+      locked=true; last=now;
+      e.preventDefault(); e.stopPropagation();
+      handler(e, fresh);
+      setTimeout(()=>locked=false, 180);
+    };
+    fresh.addEventListener('touchstart', fire, {passive:false});
+    fresh.addEventListener('click', fire, {passive:false});
+  }
+
+  // 綁四格入口（圖與外層都能點）
   [["#b1","slot1.png"],["#b2","slot2.png"],["#b3","slot3.png"],["#b4","slot4.png"]].forEach(([sel,bg])=>{
     const tile=document.querySelector(sel); if(!tile) return; const img=tile.querySelector("img");
     const act=()=>{
-      if(sel==="#b1"){ // ⚡️ 能量瓶
-        openSheet({bg, title:"今天電量不足？充電站啟動 ⚡️", sub:"多按幾下看看！", builder:(box)=>{
+      if(sel==="#b1"){ // ⚡️ 能量瓶：條→80%→100%（100% 常駐）
+        openSheet({bg, title:"今天電量不足？充電站啟動 ⚡️", sub:"多按幾下看看！", builder:(box, attach)=>{
           const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點畫面充電 →";
           const pbar=document.createElement("div"); pbar.className="pbar"; const fill=document.createElement("div"); fill.className="fill"; pbar.appendChild(fill);
           const hud=document.createElement("div"); hud.className="hud"; const wrap=document.createElement("div"); wrap.className="wrap"; hud.appendChild(wrap);
@@ -201,14 +222,15 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
             if(hudTimer){ clearTimeout(hudTimer); hudTimer=null; }
             hud.style.display="grid"; if(!persist){ hudTimer=setTimeout(()=>{ hud.style.display="none"; hudTimer=null; }, ms); }
           }
-          bindTap(box, ()=>{ step=(step%3)+1;
+          attach(()=>{
+            step=(step%3)+1;
             if(step===1){ requestAnimationFrame(()=> fill.style.width="100%"); tip.textContent="再點：80%"; setTimeout(()=>{ fill.style.width="0"; }, 900); }
             else if(step===2){ renderBattery(80, false); showHUD(false, 2300); tip.textContent="最後一下：滿格！"; }
             else{ renderBattery(100, true); showHUD(true); burst(box,14); tip.textContent="滿格！pika～關閉後可再玩，或換其他 Buff。"; }
           });
         }});
       }else if(sel==="#b2"){ // 💐 花束
-        openSheet({bg, title:"送你一束今日的好運 💐", sub:"多點幾下，好運連連。", builder:(box)=>{
+        openSheet({bg, title:"送你一束今日的好運 💐", sub:"多點幾下，好運連連。", builder:(box, attach)=>{
           const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點看看 →";
           const face=document.createElement("div"); face.className="face"; face.textContent="🌸";
           const shield=document.createElement("div"); shield.className="shield"; shield.textContent="🍀 抵禦突發";
@@ -217,7 +239,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
           const petals=(n=10)=>{ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='petal'; p.textContent='🌸'; p.style.left=(Math.random()*70+15)+'%'; p.style.top='-8px'; p.style.fontSize=(Math.random()*12+16)+'px'; p.style.animation='petalFall 1.3s ease-in forwards'; p.style.animationDelay=(Math.random()*0.25)+'s'; box.appendChild(p); setTimeout(()=>p.remove(),1500);} };
           const glitter=()=>{ for(let i=0;i<12;i++){ const s=document.createElement('div'); s.className='sparkle'; s.textContent='✨'; s.style.left=(Math.random()*70+15)+'%'; s.style.top=(Math.random()*40+30)+'%'; s.style.animation='sp .9s ease-out forwards'; box.appendChild(s); setTimeout(()=>s.remove(),950);} };
           let step=0;
-          bindTap(box, ()=>{ step=(step%3)+1;
+          attach(()=>{
+            step=(step%3)+1;
             if(step===1){ face.textContent="💐"; petals(8); tip.textContent="再點點看"; burst(box,6); }
             else if(step===2){ face.textContent="🌼"; petals(18); tip.textContent="再點點看"; burst(box,6); }
             else{ face.textContent="🌟"; halo.style.opacity=1; shield.style.opacity=1; shield.style.transform="translateY(0)"; glitter(); burst(box,10);
@@ -227,7 +250,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
           });
         }});
       }else if(sel==="#b3"){ // 🌤️ 天氣
-        openSheet({bg, titleHTML:'天氣系統連線中…<span class="only-mobile"><br></span>今日晴朗指數提升，心情放晴！ 🌈', sub:"不論晴雨，願你處處順心。", builder:(box)=>{
+        openSheet({bg, titleHTML:'天氣系統連線中…<span class="only-mobile"><br></span>今日晴朗指數提升，心情放晴！ 🌈', sub:"不論晴雨，願你處處順心。", builder:(box, attach)=>{
           const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點看看→";
           const face=document.createElement("div"); face.className="face"; face.textContent="🌥️";
           const stamp=document.createElement("div"); stamp.className="stamp"; stamp.textContent="+1 順利";
@@ -235,50 +258,13 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans
           const rays=()=>{ for(let i=0;i<6;i++){ const r=document.createElement('div'); r.className='ray'; r.textContent='✴︎'; r.style.left=(50 + Math.cos(i)*22)+'%'; r.style.top=(48 + Math.sin(i)*18)+'%'; r.style.setProperty('--r', (i*60)+'deg'); r.style.animation='sunRay .8s ease-out forwards'; box.appendChild(r); setTimeout(()=>r.remove(),900);} };
           const confetti=()=>{ const colors=['#f66','#fd6','#6f6','#6df','#86f']; for(let i=0;i<12;i++){ const c=document.createElement('div'); c.className='confetti'; c.style.width='6px'; c.style.height='6px'; c.style.borderRadius='2px'; c.style.background=colors[i%colors.length]; c.style.left=(Math.random()*80+10)+'%'; c.style.top=(Math.random()*20+20)+'%'; c.style.animation='conf .7s ease-out forwards'; box.appendChild(c); setTimeout(()=>c.remove(),800); } };
           let s=0;
-          bindTap(box, ()=>{ s=(s%3)+1;
+          attach(()=>{
+            s=(s%3)+1;
             if(s===1){ face.textContent="⛅"; tip.textContent="再點點看"; }
             else if(s===2){ face.textContent="☀️"; tip.textContent="再點點看"; rays(); }
             else{ face.textContent="🌈"; tip.textContent="放晴完成！"; stamp.style.opacity=1; stamp.style.transform="scale(1)"; confetti(); setTimeout(()=>{ stamp.style.opacity=0; stamp.style.transform="scale(.9)"; }, 1100); burst(box,8); }
           });
         }});
       }else{ // 🎁 禮物
-        openSheet({bg, title:"這份小禮物，裝著萬分感謝 ✨❤️", sub:"多點一下拆開禮盒～", builder:(box)=>{
-          const tip=document.createElement("div"); tip.className="hint"; tip.textContent="輕點開盒 →";
-          const wrap=document.createElement("div"); wrap.className="giftWrap";
-          const img=document.createElement("img"); img.className="giftImg"; img.src="slot4.png?v="+bust; img.alt="禮物";
-          const note=document.createElement("div"); note.className="giftNote"; note.textContent="博皓學長，謝謝你，辛苦了（fighting!）";
-          note.style.whiteSpace='pre-wrap'; note.style.textAlign='center';
-          wrap.append(img,note); box.append(tip, wrap);
-          let step=0, showing=false;
-          bindTap(box, ()=>{ step=(step%2)+1;
-            if(step===1){ img.classList.remove("giftGlow"); void img.offsetWidth; img.classList.add("giftGlow"); burst(wrap,10); tip.textContent="再點一次，呈上大感謝！"; }
-            else{ if(!showing){ showing=true; note.style.opacity=1; tip.textContent="完成！"; setTimeout(()=>{ note.style.opacity=0; showing=false; }, 2600); } }
-          });
-        }});
-      }
-    };
-    bindTap(tile, act);
-    if(img) bindTap(img, act);
-  });
-
-  // P3 自適應高度
-  function layoutP3(){
-    const p3=$("#p3"), banner=p3.querySelector(".banner"), hold=p3.querySelector(".gridHold"), grid=p3.querySelector(".grid4");
-    const gap=parseFloat(getComputedStyle(grid).gap)||12, reserved=90;
-    const availH = p3.clientHeight - banner.offsetHeight - gap - reserved, availW = hold.clientWidth;
-    const tileW = Math.floor((availW - gap)/2), tileHcap = Math.floor((availH - gap)/2), tile = Math.max(120, Math.min(tileW, tileHcap));
-    hold.style.height = (tile*2 + gap) + "px"; grid.querySelectorAll(".badge").forEach(el=>el.style.height = tile+"px");
-  }
-  addEventListener("resize", layoutP3); setTimeout(layoutP3, 60);
-
-  // 結尾覆疊
-  const overlay=$("#finalOverlay"), btnReplay=$("#btnReplay"), btnCopy=$("#btnCopy");
-  v3.addEventListener("ended", ()=>{ overlay.classList.add("show"); });
-  btnReplay.addEventListener("click", ()=>{ overlay.classList.remove("show"); show(0); n1.classList.remove("show"); v1.currentTime=0; v1.play().catch(()=>v1.setAttribute("controls","")); });
-  btnCopy.addEventListener("click", async ()=>{ try{ await navigator.clipboard.writeText(location.href); toast("已複製連結"); }catch(e){ toast("無法複製，請手動選取網址"); } });
-
-  function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"), 1300); }
-})();
-</script>
-</body>
-</html>
+        openSheet({bg, title:"這份小禮物，裝著萬分感謝 ✨❤️", sub:"多點一下拆開禮盒～", builder:(box, attach)=>{
+         
